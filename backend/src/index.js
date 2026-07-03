@@ -24,9 +24,14 @@ const app = express();
 // ── Middleware ────────────────────────────────────────────────────────────
 
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: [
+    'http://localhost:3000',
+    'http://localhost:3001',
+    /^chrome-extension:\/\/[a-z]+$/,
+    process.env.CORS_ORIGIN || undefined,
+  ].filter(Boolean),
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Anthena-Run-Id', 'X-Anthena-Capture-Id'],
 }));
 app.use(express.json({ limit: '50mb' }));
 app.use(requestIdMiddleware);
