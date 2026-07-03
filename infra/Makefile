@@ -28,18 +28,16 @@ help: ## Show this help message
 
 install: ## Install all dependencies (production + dev)
 	@echo "==> Installing dependencies..."
-	cd api && npm ci
-	cd crawler && npm ci
-	cd web-ui && npm ci
+	cd ../backend && npm ci
+	cd ../web-ui && npm ci
 	@echo "==> Installing Playwright Chromium (for local dev without Docker)..."
-	cd crawler && npx playwright install chromium
+	cd ../backend && npx playwright install chromium
 	@echo "==> Done. Dependencies installed."
 
 install-prod: ## Install only production dependencies
 	@echo "==> Installing production dependencies..."
-	cd api && npm ci --omit=dev
-	cd crawler && npm ci --omit=dev
-	cd web-ui && npm ci --omit=dev
+	cd ../backend && npm ci --omit=dev
+	cd ../web-ui && npm ci --omit=dev
 	@echo "==> Done."
 
 # ---- Build ----
@@ -98,35 +96,28 @@ dev-build: ## Rebuild and start in development mode
 # ---- Test ----
 
 test: ## Run all tests
-	@echo "==> Running API tests..."
-	cd api && npm test
-	@echo "==> Running Crawler tests..."
-	cd crawler && npm test
+	@echo "==> Running backend tests..."
+	cd ../backend && npm test
 	@echo "==> Running Web UI tests..."
-	cd web-ui && npm test
+	cd ../web-ui && npm test
 	@echo "==> All tests passed."
 
-test-api: ## Run only API tests
-	cd api && npm test
-
-test-crawler: ## Run only Crawler tests
-	cd crawler && npm test
+test-backend: ## Run only backend tests
+	cd ../backend && npm test
 
 test-web-ui: ## Run only Web UI tests
-	cd web-ui && npm test
+	cd ../web-ui && npm test
 
 # ---- Audit / Security ----
 
 audit: ## Run security audit on all packages
 	@echo "==> Running npm audit..."
-	cd api && npm audit || true
-	cd crawler && npm audit || true
-	cd web-ui && npm audit || true
+	cd ../backend && npm audit || true
+	cd ../web-ui && npm audit || true
 
 audit-fix: ## Fix security vulnerabilities
-	cd api && npm audit fix || true
-	cd crawler && npm audit fix || true
-	cd web-ui && npm audit fix || true
+	cd ../backend && npm audit fix || true
+	cd ../web-ui && npm audit fix || true
 
 # ---- Backup ----
 

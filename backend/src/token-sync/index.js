@@ -103,8 +103,13 @@ async function syncToFigma(runId) {
     const tokenName = cluster.name;
     const driftedProps = safeParse(cluster.driftedProperties || '[]');
     
-    // For now, simulate the Figma API call
-    // In production, this would call figmaApiRequest to create/update variables
+    // DRY-RUN MODE: Log simulation only — no actual Figma Variables API call.
+    // Actual Figma write requires:
+    //   - Figma Enterprise license with Variables REST API access (CMP-001)
+    //   - Phase 5: set FIGMA_ACCESS_TOKEN + FIGMA_FILE_KEY in .env
+    //   - Set SYNC_MODE=dry-run → figma-live in .env when ready
+    // Current mode: dry-run (simulated)
+    const syncMode = process.env.SYNC_MODE || 'dry-run';
     const logEntry = {
       id: `flog-${uuidv4().slice(0, 8)}`,
       runId,
@@ -112,9 +117,10 @@ async function syncToFigma(runId) {
       tokenValue: driftedProps.length > 0 ? driftedProps[0].actual : 'unknown',
       tokenType: 'primitive',
       action: 'create',
-      status: 'synced',
+      status: syncMode === 'dry-run' ? 'dry-run-simulated' : 'synced',
+      syncMode,
       errorCode: null,
-      errorMessage: null,
+      errorMessage: syncMode === 'dry-run' ? 'Dry-run: no actual Figma API call made' : null,
       syncedAt: new Date().toISOString(),
     };
     

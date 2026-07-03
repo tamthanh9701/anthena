@@ -31,4 +31,7 @@ ENV PLAYWRIGHT_HEADLESS=true
 HEALTHCHECK --interval=30s --timeout=5s --retries=3 --start-period=30s \
     CMD node -e "fetch('http://api:3000/internal/playwright-health').then(r=>r.json()).then(j=>j.ready?process.exit(0):process.exit(1))"
 
-CMD ["node", "src/collector/worker.js"]
+# The crawler runs as part of the API process via the queue module.
+# This container exists to provide an isolated Playwright browser environment.
+# The queue module in the API container calls src/collector/index.js functions.
+CMD ["node", "-e", "const { createBrowser } = require('./collector/browser'); const { logger } = require('./utils/logger'); const log = logger.child({module:'crawler-worker'}); log.info('Crawler worker ready, waiting for jobs via API...'); setInterval(() => { fetch(process.env.API_URL + '/internal/playwright-ping').catch(() => {}); }, 30000);"]

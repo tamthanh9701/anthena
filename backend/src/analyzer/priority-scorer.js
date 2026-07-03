@@ -19,7 +19,12 @@ function calculatePriorityScore(usageCount, driftScore, weights = {}) {
   const roleExposureWeight = weights.roleExposureWeight ?? 1.0;
   const knownExceptionWeight = weights.knownExceptionWeight ?? 0;
   
-  score = score * visualSeverityWeight * brandTokenWeight * formCriticalityWeight * roleExposureWeight + knownExceptionWeight;
+  score = score * visualSeverityWeight * brandTokenWeight * formCriticalityWeight * roleExposureWeight;
+  
+  // knownExceptionWeight REDUCES priority (subtract, not add) — BR-002e
+  if (knownExceptionWeight > 0) {
+    score = score * (1 - knownExceptionWeight);
+  }
   
   return Math.max(0, Math.round(score * 100) / 100);
 }

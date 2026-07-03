@@ -37,6 +37,26 @@ app.use(authMiddleware);
 
 app.use('/api', routes);
 
+// Serve production Web UI static build (if exists)
+const publicDir = path.join(__dirname, '..', 'public');
+if (fs.existsSync(publicDir)) {
+  app.use(express.static(publicDir));
+  // SPA fallback: serve index.html for all non-API routes
+  app.get('*', (req, res, next) => {
+    // Skip API, health, ready paths
+    if (req.path.startsWith('/api') || req.path === '/health' || req.path === '/ready') return next();
+    const indexPath = path.join(publicDir, 'index.html');
+    if (fs.existsSync(indexPath)) {
+      res.sendFile(indexPath);
+    } else {
+      next();
+    }
+  });
+  logger.info({ publicDir }, 'Serving production Web UI');
+} else {
+  logger.info('No production Web UI build found — API-only mode. Run `cd web-ui && npx vite build --outDir ../backend/public`');
+}
+
 // Also mount at root level for health/ready
 app.get('/health', (req, res, next) => {
   req.path = '/health'; // Adjust for middleware

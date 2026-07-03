@@ -5,7 +5,14 @@ const { logger } = require('../utils/logger');
 
 /**
  * Drift calculator: compares computed CSS against expected Ant Design defaults.
+ * NOTE: Current baseline is HARDCODED_ANT_DEFAULTS (Phase 0 approximation).
+ *       In Phase 2+, replace with observed/runtime token baseline from
+ *       ConfigProvider or Ant Design token extraction.
  */
+
+// Baseline metadata
+const BASELINE_SOURCE = 'hardcoded-ant-defaults';
+const BASELINE_DISCLAIMER = 'Phase 0 approximation. Replace with observed token inventory in Phase 2+. Values from Ant Design v5.27.4 default theme.';
 
 // Ant Design default values for common component properties
 const ANT_DEFAULTS = {
@@ -87,6 +94,8 @@ function calculateDrift(clusterId) {
       driftScore: 0,
       driftClassification: 'custom',
       driftedProperties: [],
+      baselineSource: BASELINE_SOURCE,
+      baselineDisclaimer: BASELINE_DISCLAIMER,
     };
   }
   
@@ -116,6 +125,8 @@ function calculateDrift(clusterId) {
     driftScore,
     driftClassification,
     driftedProperties,
+    baselineSource: BASELINE_SOURCE,
+    baselineDisclaimer: BASELINE_DISCLAIMER,
   };
 }
 
