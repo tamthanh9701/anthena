@@ -13,6 +13,8 @@ const { createErrorResponse } = require('../utils/helpers');
 
 // ── Multer: store in temp then move after validation ──────────────────────
 
+const { analyzeSession } = require('../analyzer/analyze-session');
+
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
@@ -481,7 +483,7 @@ router.post('/:sessionId/complete', (req, res) => {
   logger.info({ sessionId, runId: session.runId }, 'Capture session completed, analysis queued');
 
   // Enqueue async analysis (non-blocking)
-  const analyzeSession = require('../analyzer/analyze-session');
+  const { analyzeSession } = require('../analyzer/analyze-session');
   analyzeSession(sessionId).then(result => {
     logger.info({ sessionId, status: result.status, clusters: result.clusters.length, findings: result.findings.length }, 'Session analysis complete');
     db.prepare("UPDATE capture_sessions SET status = 'ready_for_review' WHERE id = ?").run(sessionId);
