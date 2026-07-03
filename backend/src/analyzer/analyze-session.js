@@ -103,7 +103,7 @@ async function analyzeSession(sessionId) {
       normalizedSnapshots.push(normalized);
       log.info({ captureId, nodeCount: normalized.componentTree.length }, 'Page normalized');
     } catch (err) {
-      log.error({ captureId, err: err.message }, 'Normalization failed for page, marking failed');
+      log.error({ captureId, err: err.message }, 'Normalization failed for page, marking page as failed');
       db.prepare("UPDATE page_captures SET status = 'failed' WHERE id = ?").run(captureId);
     }
   }
@@ -156,6 +156,24 @@ async function analyzeSession(sessionId) {
 
   // Assign ranks
   findings.forEach((f, i) => { f.rank = i + 1; });
+
+  // Fallback: if no priority findings but clusters exist, show top clusters by usageCount
+  if (findings.length === 0 && clusters.length > 0) {
+    log.info({ clusterCount: clusters.length }, 'No priority findings, using top clusters as reviewable evidence fallback');
+    const sorted = [...clusters].sort((a, b) => (b.usageCount || 0) - (a.usageCount || 0));
+    for (const cluster of sorted.slice(0, 10)) {
+      findings.push({
+        clusterId: cluster.id,
+        clusterName: cluster.name,
+        priorityScore: 0,
+        driftScore: cluster.driftScore || 0,
+        driftClassification: cluster.driftClassification || 'unknown',
+        usageCount: cluster.usageCount || 0,
+        description: 'Cluster ' + cluster.name + ' appears in ' + (cluster.usageCount || 0) + ' pages (fallback, no drift detected)',
+        fallback: true,
+      });
+    }
+  }
 
   // 7. Build report
   log.info('Building report');

@@ -4,21 +4,22 @@
   "description": "Anthena Chrome Extension — Capture Plane for internal app UI inventory",
   "private": true,
   "scripts": {
-    "build": "vite build",
+    "build": "vite build && node build-extension.js",
     "dev": "vite build --watch",
     "preview": "vite preview"
   },
   "dependencies": {
+    "pako": "^2.1.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
-    "webextension-polyfill": "^0.12.0",
-    "pako": "^2.1.0"
+    "webextension-polyfill": "^0.12.0"
   },
   "devDependencies": {
     "@types/chrome": "^0.0.287",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.3",
+    "esbuild": "^0.28.1",
     "typescript": "~6.0.2",
     "vite": "^8.1.1"
   }
