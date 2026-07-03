@@ -18,7 +18,7 @@ const { analyzeSession } = require('../analyzer/analyze-session');
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 100 * 1024 * 1024, // 100 MB
+    fileSize: 50 * 1024 * 1024, // 50 MB
     files: 3, // metadata + screenshot + snapshot
   },
 });
@@ -381,15 +381,15 @@ router.post('/:sessionId/pages', upload.fields([
     metadata.title,
     now,
     'uploaded',
-
-  // Set session to uploading on first page upload
-  if (session.status === 'active') {
-    db.prepare('UPDATE capture_sessions SET status = ? WHERE id = ?').run('uploading', sessionId);
-  }
     metadata.viewport?.width || null,
     metadata.viewport?.height || null,
     metadata.viewport?.deviceScaleFactor || 1.0
   );
+
+  // Set session to uploading on first page upload
+  if (session.status === "active") {
+    db.prepare("UPDATE capture_sessions SET status = ? WHERE id = ?").run("uploading", sessionId);
+  }
 
   // Store files on disk
   const pageDir = path.join(config.storagePath, 'snapshots', 'runs', session.runId, 'pages', captureId);
@@ -485,21 +485,19 @@ router.post('/:sessionId/complete', (req, res) => {
     UPDATE capture_sessions SET status = ?, completedAt = ? WHERE id = ?
   `).run('completed', now, sessionId);
 
-  logger.info({ sessionId, runId: session.runId }, 'Capture session completed, analysis started');
+  logger.info({ sessionId, runId: session.runId }, 'Capture session completed, analysis queued');
 
   // Enqueue async analysis (non-blocking)
-  db.prepare('UPDATE capture_sessions SET status = ? WHERE id = ?').run('analyzing', sessionId);
   analyzeSession(sessionId).then(result => {
     logger.info({ sessionId, status: result.status, clusters: result.clusters.length, findings: result.findings.length }, 'Session analysis complete');
-    const finalStatus = result.status === 'no_data' ? 'failed' : 'ready_for_review';
-    db.prepare('UPDATE capture_sessions SET status = ? WHERE id = ?').run(finalStatus, sessionId);
+    db.prepare("UPDATE capture_sessions SET status = 'ready_for_review' WHERE id = ?").run(sessionId);
   }).catch(err => {
     logger.error({ sessionId, err: err.message, stack: err.stack }, 'Session analysis failed');
     db.prepare("UPDATE capture_sessions SET status = 'failed' WHERE id = ?").run(sessionId);
   });
 
   res.status(202).json({
-    message: 'Session completed, analysis started',
+    message: 'Session completed, analysis queued',
     sessionId,
     runId: session.runId,
     completedAt: now,
