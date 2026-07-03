@@ -13,7 +13,6 @@ const { createErrorResponse } = require('../utils/helpers');
 
 // ── Multer: store in temp then move after validation ──────────────────────
 
-const { analyzeSession } = require('../analyzer/analyze-session');
 
 const upload = multer({
   storage: multer.memoryStorage(),
