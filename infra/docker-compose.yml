@@ -10,7 +10,7 @@ services:
       dockerfile: infra/Dockerfile.api
       target: production
     ports:
-      - "3000:3000"
+      - "3001:3000"
     volumes:
       - evidence-store:/data/evidence
       - db-data:/data/db
