@@ -1,0 +1,70 @@
+{
+  "clusters": [
+    {
+      "clusterId": "cluster-001",
+      "representativeName": "PrimaryButton",
+      "usageCount": 45,
+      "driftScore": 0.0,
+      "driftClassification": "antd-aligned",
+      "driftedProperties": [],
+      "evidenceCitations": ["node-001", "node-045"],
+      "screens": [
+        { "route": "/dashboard", "role": "admin" },
+        { "route": "/orders", "role": "admin" },
+        { "route": "/orders/create", "role": "admin" },
+        { "route": "/users", "role": "admin" }
+      ],
+      "roles": ["admin", "user"],
+      "representativeCrop": "crops/cluster-001-rep.webp",
+      "priorityScore": 0.0,
+      "approvalStatus": "pending",
+      "confidenceMin": 0.85,
+      "confidenceMax": 0.95,
+      "confidenceAvg": 0.90
+    },
+    {
+      "clusterId": "cluster-002",
+      "representativeName": "StatusTag",
+      "usageCount": 23,
+      "driftScore": 0.6,
+      "driftClassification": "drifted",
+      "driftedProperties": [
+        { "property": "color", "expected": "#52c41a", "actual": "#389e0d" },
+        { "property": "borderRadius", "expected": "4px", "actual": "2px" }
+      ],
+      "evidenceCitations": ["node-023", "node-067"],
+      "screens": [
+        { "route": "/dashboard", "role": "admin" },
+        { "route": "/orders", "role": "admin" },
+        { "route": "/products", "role": "user" }
+      ],
+      "roles": ["admin", "user"],
+      "representativeCrop": "crops/cluster-002-rep.webp",
+      "priorityScore": 13.8,
+      "approvalStatus": "pending",
+      "confidenceMin": 0.70,
+      "confidenceMax": 0.88,
+      "confidenceAvg": 0.80
+    },
+    {
+      "clusterId": "cluster-003",
+      "representativeName": "CustomChart",
+      "usageCount": 5,
+      "driftScore": null,
+      "driftClassification": "custom",
+      "driftedProperties": [],
+      "evidenceCitations": ["node-005"],
+      "screens": [
+        { "route": "/dashboard", "role": "admin" },
+        { "route": "/reports", "role": "admin" }
+      ],
+      "roles": ["admin"],
+      "representativeCrop": "crops/cluster-003-rep.webp",
+      "priorityScore": null,
+      "approvalStatus": "pending",
+      "confidenceMin": 0.40,
+      "confidenceMax": 0.60,
+      "confidenceAvg": 0.50
+    }
+  ]
+}

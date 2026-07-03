@@ -1,0 +1,114 @@
+version: "3.9"
+
+name: reverse-ds-pipeline
+
+services:
+  api:
+    container_name: reverse-ds-api
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.api
+      target: production
+    ports:
+      - "3000:3000"
+    volumes:
+      - evidence-store:/data/evidence
+      - db-data:/data/db
+      - config-data:/data/config:ro
+    env_file:
+      - ${CONFIG_PATH:-./config}/.env
+    environment:
+      - NODE_ENV=production
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 1G
+        reservations:
+          cpus: "1.0"
+          memory: 512M
+    stop_grace_period: 30s
+    restart: unless-stopped
+    networks:
+      - reverse-ds-net
+
+  crawler:
+    container_name: reverse-ds-crawler
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.crawler
+    depends_on:
+      api:
+        condition: service_healthy
+    volumes:
+      - evidence-store:/data/evidence
+      - config-data:/data/config:ro
+    env_file:
+      - ${CONFIG_PATH:-./config}/.env
+    environment:
+      - NODE_ENV=production
+      - API_URL=http://api:3000
+    cap_drop:
+      - ALL
+    cap_add: []  # No extra capabilities — Playwright uses --no-sandbox
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://api:3000/internal/playwright-health').then(r=>r.json()).then(j=>j.ready?process.exit(0):process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: "4.0"
+          memory: 2G
+        reservations:
+          cpus: "2.0"
+          memory: 1G
+    stop_grace_period: 30s
+    restart: unless-stopped
+    networks:
+      - reverse-ds-net
+    security_opt:
+      - no-new-privileges:true
+
+  web-ui-dev:
+    container_name: reverse-ds-web-ui-dev
+    build:
+      context: ../web-ui
+      dockerfile: ../infra/Dockerfile.web-ui
+      target: dev
+    profiles:
+      - dev
+    ports:
+      - "5173:5173"
+    volumes:
+      - ../web-ui/src:/app/src
+      - ../web-ui/index.html:/app/index.html
+    environment:
+      - NODE_ENV=development
+      - VITE_API_URL=http://localhost:3000
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - reverse-ds-net
+
+volumes:
+  evidence-store:
+    name: reverse-ds-evidence-store
+  db-data:
+    name: reverse-ds-db-data
+  config-data:
+    name: reverse-ds-config-data
+
+networks:
+  reverse-ds-net:
+    name: reverse-ds-net
+    driver: bridge

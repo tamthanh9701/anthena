@@ -1,0 +1,120 @@
+{
+  "id": "snap-s001",
+  "runId": "run-test-001",
+  "url": "https://staging.example.com/dashboard",
+  "role": "admin",
+  "capturedAt": "2026-07-02T14:30:00.000Z",
+  "schemaVersion": "1.0.0",
+  "extractorVersion": null,
+  "analyzerVersion": null,
+  "filePath": "runs/run-test-001/snapshot.json.gz",
+  "screenshotPath": "runs/run-test-001/full.webp",
+  "cropDirPath": "runs/run-test-001/crops/",
+  "thumbDirPath": "runs/run-test-001/thumbnails/",
+  "status": "captured",
+  "nodeCount": 0,
+  "viewportWidth": 1920,
+  "viewportHeight": 1080,
+  "deviceScaleFactor": 1.0,
+  "error": null,
+  "isLegacy": 0,
+  "feedback": null,
+  "nodes": [
+    {
+      "id": "node-001",
+      "tag": "button",
+      "classes": ["ant-btn", "ant-btn-primary", "ant-btn-lg"],
+      "attributes": { "id": "submit", "aria-label": "Submit form" },
+      "rect": { "x": 100, "y": 200, "w": 120, "h": 40 },
+      "computedCSS": {
+        "backgroundColor": "#1677ff",
+        "color": "#ffffff",
+        "fontSize": "16px",
+        "fontFamily": "-apple-system, sans-serif",
+        "lineHeight": "24px",
+        "padding": "8px 16px",
+        "margin": "0",
+        "border": "1px solid #1677ff",
+        "borderRadius": "6px",
+        "boxShadow": "none",
+        "width": "120px",
+        "height": "40px"
+      },
+      "visible": true
+    },
+    {
+      "id": "node-002",
+      "tag": "div",
+      "classes": ["custom-chart"],
+      "attributes": {},
+      "rect": { "x": 300, "y": 100, "w": 800, "h": 400 },
+      "computedCSS": {
+        "backgroundColor": "#ffffff",
+        "color": "#000000",
+        "fontSize": "14px",
+        "fontFamily": "-apple-system, sans-serif",
+        "lineHeight": "20px",
+        "padding": "16px",
+        "margin": "0",
+        "border": "1px solid #d9d9d9",
+        "borderRadius": "8px",
+        "boxShadow": "0 2px 8px rgba(0,0,0,0.1)",
+        "width": "800px",
+        "height": "400px"
+      },
+      "visible": true
+    },
+    {
+      "id": "node-003",
+      "tag": "span",
+      "classes": ["ant-tag", "ant-tag-green"],
+      "attributes": { "data-testid": "status-tag" },
+      "rect": { "x": 500, "y": 300, "w": 60, "h": 24 },
+      "computedCSS": {
+        "backgroundColor": "#f6ffed",
+        "color": "#52c41a",
+        "fontSize": "12px",
+        "lineHeight": "20px",
+        "padding": "2px 8px",
+        "margin": "0",
+        "border": "1px solid #b7eb8f",
+        "borderRadius": "4px",
+        "boxShadow": "none",
+        "width": "60px",
+        "height": "24px",
+        "fontFamily": "-apple-system, sans-serif"
+      },
+      "visible": true
+    },
+    {
+      "id": "node-004",
+      "tag": "div",
+      "classes": [],
+      "attributes": { "style": "display:none" },
+      "rect": { "x": 0, "y": 0, "w": 0, "h": 0 },
+      "visible": false
+    },
+    {
+      "id": "node-005",
+      "tag": "table",
+      "classes": ["ant-table"],
+      "attributes": {},
+      "rect": { "x": 50, "y": 400, "w": 900, "h": 600 },
+      "computedCSS": {
+        "backgroundColor": "#ffffff",
+        "color": "#000000",
+        "fontSize": "14px",
+        "fontFamily": "-apple-system, sans-serif",
+        "lineHeight": "22px",
+        "padding": "0",
+        "margin": "0",
+        "border": "1px solid #f0f0f0",
+        "borderRadius": "8px",
+        "boxShadow": "none",
+        "width": "900px",
+        "height": "600px"
+      },
+      "visible": true
+    }
+  ]
+}

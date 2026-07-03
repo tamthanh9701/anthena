@@ -1,0 +1,59 @@
+# Reverse Design System Pipeline — Root .gitignore
+
+# --- Environment & Secrets ---
+.env
+.env.local
+.env.*.local
+*.key
+*.pem
+*.cert
+secrets/
+
+# --- Dependencies ---
+node_modules/
+
+# --- Build Outputs ---
+dist/
+build/
+*.tsbuildinfo
+
+# --- Docker Volumes (runtime data) ---
+volumes/
+
+# --- Logs ---
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# --- OS Files ---
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# --- IDE / Editor ---
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# --- Database (SQLite runtime files) ---
+*.db
+*.db-wal
+*.db-shm
+
+# --- Temp ---
+tmp/
+temp/
+*.tmp
+
+# --- Docker ---
+.docker/
+docker-compose.override.yml

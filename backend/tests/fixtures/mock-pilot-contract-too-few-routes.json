@@ -1,0 +1,21 @@
+{
+  "_comment": "Minimal pilot contract with route list below minimum (4 routes — should be 5-10)",
+  "id": "ctr-too-few",
+  "operatorName": "Jane Doe",
+  "operatorRole": "Design Lead",
+  "environment": "staging",
+  "routeList": [
+    "https://staging.example.com/dashboard",
+    "https://staging.example.com/orders",
+    "https://staging.example.com/products",
+    "https://staging.example.com/users"
+  ],
+  "reviewBudgetMinutes": 30,
+  "maxCandidates": 50,
+  "reviewMode": "component-cluster",
+  "definitionOfInsight": ["Test insight"],
+  "phase0DoD": ["Test DoD"],
+  "pilotDoD": ["Test pilot DoD"],
+  "createdAt": "2026-07-02T10:00:00.000Z",
+  "version": 1
+}

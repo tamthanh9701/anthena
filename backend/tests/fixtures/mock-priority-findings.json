@@ -1,0 +1,49 @@
+{
+  "findings": [
+    {
+      "findingId": "finding-001",
+      "clusterId": "cluster-002",
+      "clusterName": "StatusTag",
+      "priorityScore": 13.8,
+      "rank": 1,
+      "usageCount": 23,
+      "driftScore": 0.6,
+      "driftClassification": "drifted",
+      "representativeCrop": "crops/cluster-002-rep.webp",
+      "screens": ["/dashboard", "/orders", "/products"],
+      "roles": ["admin", "user"],
+      "status": "pending",
+      "confidenceAvg": 0.80
+    },
+    {
+      "findingId": "finding-002",
+      "clusterId": "cluster-001",
+      "clusterName": "PrimaryButton",
+      "priorityScore": 0.0,
+      "rank": 2,
+      "usageCount": 45,
+      "driftScore": 0.0,
+      "driftClassification": "antd-aligned",
+      "representativeCrop": "crops/cluster-001-rep.webp",
+      "screens": ["/dashboard", "/orders", "/orders/create", "/users"],
+      "roles": ["admin", "user"],
+      "status": "pending",
+      "confidenceAvg": 0.90
+    },
+    {
+      "findingId": "finding-003",
+      "clusterId": "cluster-003",
+      "clusterName": "CustomChart",
+      "priorityScore": 0.0,
+      "rank": 3,
+      "usageCount": 5,
+      "driftScore": null,
+      "driftClassification": "custom",
+      "representativeCrop": "crops/cluster-003-rep.webp",
+      "screens": ["/dashboard", "/reports"],
+      "roles": ["admin"],
+      "status": "pending",
+      "confidenceAvg": 0.50
+    }
+  ]
+}

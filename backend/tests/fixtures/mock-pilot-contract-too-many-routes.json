@@ -1,0 +1,28 @@
+{
+  "_comment": "Pilot contract with route list exceeding maximum (11 routes — should be 5-10)",
+  "id": "ctr-too-many",
+  "operatorName": "Jane Doe",
+  "operatorRole": "Design Lead",
+  "environment": "staging",
+  "routeList": [
+    "https://staging.example.com/a",
+    "https://staging.example.com/b",
+    "https://staging.example.com/c",
+    "https://staging.example.com/d",
+    "https://staging.example.com/e",
+    "https://staging.example.com/f",
+    "https://staging.example.com/g",
+    "https://staging.example.com/h",
+    "https://staging.example.com/i",
+    "https://staging.example.com/j",
+    "https://staging.example.com/k"
+  ],
+  "reviewBudgetMinutes": 30,
+  "maxCandidates": 50,
+  "reviewMode": "component-cluster",
+  "definitionOfInsight": ["Test insight"],
+  "phase0DoD": ["Test DoD"],
+  "pilotDoD": ["Test pilot DoD"],
+  "createdAt": "2026-07-02T10:00:00.000Z",
+  "version": 1
+}

@@ -1,0 +1,9 @@
+{
+  "identity": {
+    "name": "PrimaryButton",
+    "source": "react-fiber",
+    "confidence": 0.9,
+    "ownerPath": ["App", "Dashboard", "ActionBar", "PrimaryButton"],
+    "evidence": ["fiber-displayName", "fiber-owner-chain"]
+  }
+}

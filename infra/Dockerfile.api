@@ -1,0 +1,75 @@
+# ============================================================
+# Dockerfile.api — Reverse Design System API + Web UI
+# Multi-stage build: dev → production
+# ============================================================
+
+# ---------- Stage 0: Development (hot reload) ----------------
+FROM node:20-slim AS dev
+
+WORKDIR /app
+
+# Install curl for healthchecks
+RUN apt-get update && apt-get install -y --no-install-recommends curl && \
+    rm -rf /var/lib/apt/lists/*
+
+# Copy backend deps
+COPY backend/package.json backend/package-lock.json ./backend/
+WORKDIR /app/backend
+RUN npm ci
+
+# Copy web-ui deps
+WORKDIR /app
+COPY web-ui/package.json web-ui/package-lock.json ./web-ui/
+WORKDIR /app/web-ui
+RUN npm ci
+
+WORKDIR /app
+COPY backend/ ./backend/
+COPY web-ui/ ./web-ui/
+
+EXPOSE 3000 5173 9229
+
+CMD ["npm", "run", "dev", "--prefix", "/app/backend"]
+
+
+# ---------- Stage 1: Production (combined) --------------------
+FROM node:20-slim AS production
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends curl && \
+    rm -rf /var/lib/apt/lists/* && \
+    groupadd -r appuser && useradd -r -g appuser -d /app -s /sbin/nologin appuser
+
+# Copy backend production deps
+COPY backend/package.json backend/package-lock.json ./backend/
+WORKDIR /app/backend
+RUN npm ci --omit=dev
+
+# Copy backend source (plain JS, no TS compile needed)
+COPY backend/src/ ./src/
+
+# Build web-ui and copy static files
+WORKDIR /app
+COPY web-ui/package.json web-ui/package-lock.json ./web-ui/
+WORKDIR /app/web-ui
+RUN npm ci --omit=dev
+COPY web-ui/ ./
+RUN npx vite build --outDir ../backend/public
+
+WORKDIR /app/backend
+
+RUN mkdir -p /data/evidence /data/db /data/config && \
+    chown -R appuser:appuser /app /data
+
+USER appuser
+
+ENV NODE_ENV=production
+ENV PORT=3000
+
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 --start-period=60s \
+    CMD curl -f http://localhost:3000/health || exit 1
+
+EXPOSE 3000
+
+CMD ["node", "src/index.js"]

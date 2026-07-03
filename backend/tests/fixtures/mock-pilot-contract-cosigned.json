@@ -1,0 +1,37 @@
+{
+  "_comment": "Co-signed pilot contract (cosignedAt set) — used to test Phase 1 gate is open",
+  "id": "ctr-signed",
+  "operatorName": "Jane Doe",
+  "operatorRole": "Design Lead",
+  "environment": "staging",
+  "routeList": [
+    "https://staging.example.com/dashboard",
+    "https://staging.example.com/orders",
+    "https://staging.example.com/orders/create",
+    "https://staging.example.com/products",
+    "https://staging.example.com/users",
+    "https://staging.example.com/settings",
+    "https://staging.example.com/profile"
+  ],
+  "reviewBudgetMinutes": 30,
+  "maxCandidates": 50,
+  "reviewMode": "component-cluster",
+  "definitionOfInsight": [
+    "Identify components that diverge from Ant Design defaults",
+    "Map detected components back to design tokens"
+  ],
+  "phase0DoD": [
+    "Signal reliability report generated for at least 1 route",
+    "Extraction signals categorized as YES/NO with blocker tags"
+  ],
+  "pilotDoD": [
+    "All routes crawled successfully",
+    "Token inventory generated",
+    "Drift report reviewed by designer"
+  ],
+  "topN": 30,
+  "cosignedAt": "2026-07-02T14:30:00.000Z",
+  "cosignedBy": "Jane Doe (Design Lead)",
+  "createdAt": "2026-07-02T10:00:00.000Z",
+  "version": 1
+}

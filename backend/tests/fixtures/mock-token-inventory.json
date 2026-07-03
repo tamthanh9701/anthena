@@ -1,0 +1,8 @@
+{
+  "tokens": [
+    { "name": "colorPrimary", "value": "#1890ff", "dataType": "color", "usageCount": 142, "screens": ["/dashboard", "/orders", "/users"], "_source": "inferred", "confidence": 0.85 },
+    { "name": "colorPrimary", "value": "#1677ff", "dataType": "color", "usageCount": 3, "screens": ["/login"], "_source": "runtime", "confidence": 0.98 },
+    { "name": "fontSizeBase", "value": "14px", "dataType": "px", "usageCount": 89, "screens": ["/dashboard", "/orders", "/users", "/settings"], "_source": "inferred", "confidence": 0.90 },
+    { "name": "borderRadiusBase", "value": "6px", "dataType": "px", "usageCount": 67, "screens": ["/dashboard", "/orders"], "_source": "inferred", "confidence": 0.88 }
+  ]
+}

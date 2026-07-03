@@ -1,0 +1,38 @@
+version: "3.9"
+
+services:
+  api:
+    build:
+      target: dev
+    volumes:
+      - ./api/src:/app/src
+      - ./api/public:/app/public
+    environment:
+      - NODE_ENV=development
+      - LOG_LEVEL=debug
+    ports:
+      - "9229:9229"  # Node.js debugger inspector
+
+  crawler:
+    build:
+      target: dev
+    volumes:
+      - ./crawler/src:/app/src
+    environment:
+      - NODE_ENV=development
+      - LOG_LEVEL=debug
+      - PLAYWRIGHT_HEADLESS=true
+
+  web-ui-dev:
+    profiles:
+      - dev
+    build:
+      target: dev
+    volumes:
+      - ./web-ui/src:/app/src
+      - ./web-ui/index.html:/app/index.html
+    environment:
+      - NODE_ENV=development
+      - VITE_API_URL=http://localhost:3000
+    ports:
+      - "5173:5173"
