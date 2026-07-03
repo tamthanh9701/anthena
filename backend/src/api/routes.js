@@ -13,9 +13,13 @@ const tokenSync = require('../token-sync');
 const reportBuilder = require('../analyzer/report-builder');
 const { createErrorResponse, paginate, validateRouteList, validatePilotContractForCosign, isValidUuid } = require('../utils/helpers');
 const idempotencyMiddleware = require('../middleware/idempotency');
+const captureSessionRouter = require('./capture-session');
 
 // Apply idempotency middleware to all POST routes
 router.post('*', idempotencyMiddleware);
+
+// Mount capture session routes
+router.use('/capture-sessions', captureSessionRouter);
 
 // ── Database helpers ───────────────────────────────────────────────────────
 

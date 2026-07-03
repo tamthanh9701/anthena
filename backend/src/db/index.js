@@ -315,8 +315,69 @@ CREATE INDEX IF NOT EXISTS idx_designer_feedback_target ON designer_feedback(tar
 CREATE INDEX IF NOT EXISTS idx_designer_feedback_runId ON designer_feedback(runId);
 `;
 
+// ── Schema version 1.1.0 — Capture Session tables ────────────────────────
+
+const MIGRATION_1_1_0 = `
+-- Table 15: capture_sessions
+CREATE TABLE IF NOT EXISTS capture_sessions (
+    id TEXT PRIMARY KEY,
+    runId TEXT NOT NULL,
+    mode TEXT NOT NULL DEFAULT 'extension-direct-upload',
+    status TEXT NOT NULL DEFAULT 'created',
+    uploadTokenHash TEXT,
+    expiresAt TEXT,
+    createdAt TEXT NOT NULL,
+    completedAt TEXT,
+    FOREIGN KEY (runId) REFERENCES runs(id) ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS idx_capture_sessions_runId ON capture_sessions(runId);
+CREATE INDEX IF NOT EXISTS idx_capture_sessions_status ON capture_sessions(status);
+
+-- Table 16: page_captures
+CREATE TABLE IF NOT EXISTS page_captures (
+    id TEXT PRIMARY KEY,
+    runId TEXT NOT NULL,
+    sessionId TEXT NOT NULL,
+    routeKey TEXT NOT NULL,
+    url TEXT,
+    title TEXT,
+    capturedAt TEXT,
+    status TEXT NOT NULL DEFAULT 'pending',
+    uploadStatus TEXT,
+    stitchStatus TEXT,
+    screenshotPath TEXT,
+    snapshotPath TEXT,
+    viewportWidth INTEGER,
+    viewportHeight INTEGER,
+    deviceScaleFactor REAL DEFAULT 1.0,
+    FOREIGN KEY (runId) REFERENCES runs(id) ON DELETE CASCADE,
+    FOREIGN KEY (sessionId) REFERENCES capture_sessions(id) ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS idx_page_captures_runId ON page_captures(runId);
+CREATE INDEX IF NOT EXISTS idx_page_captures_sessionId ON page_captures(sessionId);
+CREATE INDEX IF NOT EXISTS idx_page_captures_routeKey ON page_captures(routeKey);
+CREATE INDEX IF NOT EXISTS idx_page_captures_status ON page_captures(status);
+
+-- Table 17: upload_tokens
+CREATE TABLE IF NOT EXISTS upload_tokens (
+    id TEXT PRIMARY KEY,
+    tokenHash TEXT NOT NULL UNIQUE,
+    sessionId TEXT NOT NULL,
+    scope TEXT NOT NULL DEFAULT 'upload:page',
+    expiresAt TEXT NOT NULL,
+    createdAt TEXT NOT NULL,
+    revokedAt TEXT,
+    FOREIGN KEY (sessionId) REFERENCES capture_sessions(id) ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS idx_upload_tokens_sessionId ON upload_tokens(sessionId);
+CREATE INDEX IF NOT EXISTS idx_upload_tokens_tokenHash ON upload_tokens(tokenHash);
+`;
+
 function runMigrations() {
   const conn = getDb();
+  
+  // First, ensure schema_version table exists (better-sqlite3 throws if table missing)
+  conn.exec("CREATE TABLE IF NOT EXISTS schema_version (version TEXT PRIMARY KEY, appliedAt TEXT NOT NULL DEFAULT (datetime('now')))");
   
   // Check current schema version
   const currentVersion = conn.prepare("SELECT version FROM schema_version ORDER BY version DESC LIMIT 1").get();
@@ -324,10 +385,25 @@ function runMigrations() {
   if (!currentVersion) {
     logger.info('Applying initial schema migration v1.0.0');
     conn.exec(MIGRATION_1_0_0);
-    conn.prepare("INSERT INTO schema_version (version) VALUES ('1.0.0')").run();
+    conn.prepare("INSERT OR IGNORE INTO schema_version (version) VALUES ('1.0.0')").run();
     logger.info('Schema migration v1.0.0 applied');
+    // Apply v1.1.0 immediately for fresh installs
+    logger.info('Applying schema migration v1.1.0');
+    conn.exec(MIGRATION_1_1_0);
+    conn.prepare("INSERT OR IGNORE INTO schema_version (version) VALUES ('1.1.0')").run();
+    logger.info('Schema migration v1.1.0 applied');
   } else {
-    logger.info({ version: currentVersion.version }, 'Database schema already up to date');
+    const version = currentVersion.version;
+    logger.info({ version }, 'Current database schema version');
+    
+    if (version === '1.0.0' || version < '1.1.0') {
+      logger.info('Applying schema migration v1.1.0');
+      conn.exec(MIGRATION_1_1_0);
+      conn.prepare("INSERT OR IGNORE INTO schema_version (version) VALUES ('1.1.0')").run();
+      logger.info('Schema migration v1.1.0 applied');
+    } else {
+      logger.info({ version }, 'Database schema already up to date');
+    }
   }
 }
 
@@ -351,10 +427,26 @@ function seedDefaults() {
   }
 }
 
+/**
+ * Get the capture_sessions db helper — returns same connection.
+ * Convenience for routes needing capture_sessions queries.
+ */
+function getCaptureSessionDb() {
+  return getDb();
+}
+
+/**
+ * Get the page_captures db helper — returns same connection.
+ * Convenience for routes needing page_captures queries.
+ */
+function getPageCaptureDb() {
+  return getDb();
+}
+
 function initialize() {
   runMigrations();
   seedDefaults();
   return getDb();
 }
 
-module.exports = { getDb, closeDb, initialize };
+module.exports = { getDb, closeDb, initialize, getCaptureSessionDb, getPageCaptureDb };

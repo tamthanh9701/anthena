@@ -58,13 +58,22 @@ if (fs.existsSync(publicDir)) {
 }
 
 // Also mount at root level for health/ready
-app.get('/health', (req, res, next) => {
-  req.path = '/health'; // Adjust for middleware
-  routes.handle(req, res, next);
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    version: config.schemaVersion,
+  });
 });
-app.get('/ready', (req, res, next) => {
-  req.path = '/ready';
-  routes.handle(req, res, next);
+app.get('/ready', (req, res) => {
+  try {
+    const db = require('./db').getDb();
+    db.prepare('SELECT 1').get();
+    res.json({ status: 'ready', db: 'connected' });
+  } catch (e) {
+    res.status(503).json({ status: 'not_ready', db: e.message });
+  }
 });
 
 // ── Error Handling ────────────────────────────────────────────────────────
