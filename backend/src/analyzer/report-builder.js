@@ -230,4 +230,84 @@ function safeParse(str) {
   try { return JSON.parse(str); } catch { return {}; }
 }
 
-module.exports = { buildTokenReport, buildComponentReport, buildDriftReport, buildRunSummary, buildSignalReliabilityReport };
+
+
+/**
+ * Build a full analysis report from in-memory data (no DB reads).
+ * Used by analyze-session.js.
+ *
+ * @param {string} runId
+ * @param {{clusters: Array, drift: {drifts: Array, summary: object}, tokens: object, findings: Array}} analysis
+ * @returns {object} report
+ */
+function buildReport(runId, analysis) {
+  const { clusters, drift, tokens, findings } = analysis;
+
+  const now = new Date().toISOString();
+
+  const components = clusters.map(c => ({
+    name: c.name,
+    classification: c.driftClassification || 'unknown',
+    usageCount: c.usageCount,
+    screens: c.screens.map(s => s.url || s),
+    priorityScore: c.priorityScore || 0,
+    confidenceAvg: c.confidenceAvg || 0,
+  }));
+
+  // Build drift report
+  const driftReport = {
+    runId,
+    generatedAt: now,
+    summary: drift.summary,
+    drifts: drift.drifts,
+  };
+
+  // Build token report
+  const tokenReport = tokens;
+
+  // Build component report
+  const componentReport = {
+    runId,
+    generatedAt: now,
+    totalComponents: components.length,
+    components,
+  };
+
+  // Rich summary
+  const topFindings = (findings || []).slice(0, 3).map(f => ({
+    clusterId: f.clusterId,
+    clusterName: f.clusterName,
+    priorityScore: f.priorityScore || 0,
+    description: f.description || '',
+  }));
+
+  const report = {
+    runId,
+    generatedAt: now,
+    status: 'ready_for_review',
+    summary: {
+      totalClusters: clusters.length,
+      totalTokens: tokens.totalTokens || Object.keys(tokens.tokens || {}).length,
+      totalFindings: (findings || []).length,
+      topFindings,
+      ...drift.summary,
+    },
+    components: componentReport,
+    tokens: tokenReport,
+    drifts: driftReport,
+    findings: findings || [],
+  };
+
+  logger.info({ runId, clusters: clusters.length, findings: (findings || []).length }, 'Analysis report built');
+
+  return report;
+}
+
+module.exports = {
+  buildTokenReport,
+  buildComponentReport,
+  buildDriftReport,
+  buildRunSummary,
+  buildSignalReliabilityReport,
+  buildReport,
+};

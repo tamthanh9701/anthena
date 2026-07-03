@@ -204,4 +204,140 @@ function safeParse(str) {
   try { return JSON.parse(str); } catch { return {}; }
 }
 
-module.exports = { calculateDrift, calculateClusterDrift, calculateAllDrift };
+
+
+/**
+ * Calculate drift across in-memory clusters (no DB dependency).
+ * Used by analyze-session.js after clusterAcrossPages().
+ *
+ * @param {Array<object>} clusters - output from clusterAcrossPages()
+ * @param {Array<object>} normalizedSnapshots - source snapshots with componentTree
+ * @returns {{drift: Array<object>, summary: object}}
+ */
+function calculateDriftFromClusters(clusters, normalizedSnapshots) {
+  const log = logger.child({ module: 'drift-calculator', method: 'calculateDriftFromClusters' });
+  const drifts = [];
+
+  for (const cluster of clusters) {
+    const drift = inMemDrift(cluster);
+    cluster.driftScore = drift.driftScore;
+    cluster.driftClassification = drift.driftClassification;
+    cluster.driftedProperties = drift.driftedProperties;
+    drifts.push(drift);
+  }
+
+  const antdAligned = drifts.filter(d => d.driftClassification === 'antd-aligned').length;
+  const drifted = drifts.filter(d => d.driftClassification === 'drifted').length;
+  const custom = drifts.filter(d => d.driftClassification === 'custom').length;
+  const scores = drifts.map(d => d.driftScore).filter(s => s != null);
+
+  const summary = {
+    totalClusters: drifts.length,
+    antdAligned,
+    drifted,
+    custom,
+    averageDriftScore: scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : 0,
+    maxDriftScore: scores.length > 0 ? Math.max(...scores) : 0,
+  };
+
+  log.info(summary, 'In-memory drift calculation complete');
+  return { drifts, summary };
+}
+
+function inMemDrift(cluster) {
+  if (cluster.driftClassification === 'antd-aligned' || cluster.driftClassification === 'custom') {
+    return {
+      driftScore: 0,
+      driftClassification: cluster.driftClassification || 'custom',
+      driftedProperties: [],
+      baselineSource: BASELINE_SOURCE,
+      baselineDisclaimer: BASELINE_DISCLAIMER,
+    };
+  }
+
+  const driftedProperties = [];
+  let totalDrift = 0;
+  let propCount = 0;
+
+  // If we have no fingerprint data, short-circuit
+  if (cluster.classFingerprints.length === 0) {
+    return {
+      driftScore: 0,
+      driftClassification: 'custom',
+      driftedProperties: [],
+      baselineSource: BASELINE_SOURCE,
+      baselineDisclaimer: BASELINE_DISCLAIMER,
+    };
+  }
+
+  // Infer antd component from fingerprints or name
+  const antdComponent = inMemFindAntd(cluster.name, cluster.classFingerprints);
+  if (!antdComponent) {
+    return {
+      driftScore: 0,
+      driftClassification: 'custom',
+      driftedProperties: [],
+      baselineSource: BASELINE_SOURCE,
+      baselineDisclaimer: BASELINE_DISCLAIMER,
+    };
+  }
+
+  const defaults = ANT_DEFAULTS[antdComponent];
+  if (!defaults) {
+    return {
+      driftScore: 0,
+      driftClassification: 'custom',
+      driftedProperties: [],
+      baselineSource: BASELINE_SOURCE,
+      baselineDisclaimer: BASELINE_DISCLAIMER,
+    };
+  }
+
+  // Use first style fingerprint as representative
+  const firstFp = cluster.styleFingerprints[0] || '';
+  const fpParts = firstFp.split('|');
+  const styleKeys = ['backgroundColor', 'color', 'fontSize', 'borderRadius', 'width', 'height'];
+  const styles = {};
+  for (let i = 0; i < styleKeys.length && i < fpParts.length; i++) {
+    if (fpParts[i]) styles[styleKeys[i]] = fpParts[i];
+  }
+
+  for (const [prop, expected] of Object.entries(defaults)) {
+    const actual = styles[prop];
+    if (actual && actual !== expected) {
+      driftedProperties.push({
+        property: prop,
+        expected,
+        actual,
+        severity: calculateSeverity(prop, expected, actual),
+      });
+      totalDrift += 1;
+    }
+    propCount++;
+  }
+
+  const driftScore = propCount > 0 ? totalDrift / propCount : 0;
+  const driftClassification = driftScore === 0 ? 'antd-aligned' : 'drifted';
+
+  return {
+    driftScore,
+    driftClassification,
+    driftedProperties,
+    baselineSource: BASELINE_SOURCE,
+    baselineDisclaimer: BASELINE_DISCLAIMER,
+  };
+}
+
+function inMemFindAntd(name, fingerprints) {
+  for (const fp of fingerprints) {
+    for (const component of Object.keys(ANT_DEFAULTS)) {
+      if (fp.includes(component)) return component;
+    }
+  }
+  for (const component of Object.keys(ANT_DEFAULTS)) {
+    if (name && name.toLowerCase().includes(component.replace('ant-', ''))) return component;
+  }
+  return null;
+}
+
+module.exports = { calculateDrift, calculateClusterDrift, calculateAllDrift, calculateDriftFromClusters };

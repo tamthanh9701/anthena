@@ -223,4 +223,113 @@ function safeParse(str) {
   try { return JSON.parse(str); } catch { return {}; }
 }
 
-module.exports = { Clusterer };
+module.exports = { Clusterer, clusterAcrossPages };
+
+/**
+ * Cluster nodes across normalized extension snapshots (in-memory).
+ * No DB dependency — used by analyze-session.js.
+ *
+ * @param {Array<object>} normalizedSnapshots - array from normalizer.normalizeExtensionSnapshot()
+ * @returns {Array<object>} clusters
+ */
+function clusterAcrossPages(normalizedSnapshots) {
+  const log = logger.child({ module: 'clusterer', method: 'clusterAcrossPages' });
+  const clusters = [];
+
+  for (const snap of normalizedSnapshots) {
+    for (const node of snap.componentTree || []) {
+      clusterNodeInMem(clusters, node, snap);
+    }
+  }
+
+  for (const cluster of clusters) {
+    cluster.confidenceMin = 0;
+    cluster.confidenceMax = 0;
+    cluster.confidenceAvg = 0;
+    cluster.priorityScore = typeof cluster.driftScore === 'number' && cluster.usageCount > 0
+      ? Math.max(0, Math.round(cluster.usageCount * cluster.driftScore * 100) / 100)
+      : 0;
+  }
+
+  log.info({ clusterCount: clusters.length }, 'In-memory clustering complete');
+  return clusters;
+}
+
+function clusterNodeInMem(clusters, node, snap) {
+  const identity = node.identity || {};
+  const classification = node.classification || {};
+  const styles = node.computedStyles || {};
+  const evidence = node.evidence || {};
+  const rect = node.rect || {};
+
+  const name = identity.name || '';
+  const tag = evidence.tagName || '';
+  const classes = (evidence.antdClasses || []).sort().join('.');
+
+  const styleKeys = ['backgroundColor', 'color', 'fontSize', 'borderRadius', 'width', 'height'];
+  const styleFp = styleKeys.map(k => styles[k] || '').join('|');
+  const sizeBucket = inMemSizeBucket(rect.width, rect.height);
+
+  let matched = null;
+  for (const cluster of clusters) {
+    const m = inMemMatchScore(cluster, name, tag, classes, styleFp, sizeBucket);
+    if (m >= 0.6) { matched = cluster; break; }
+  }
+
+  if (matched) {
+    matched.usageCount++;
+    if (!matched.screens.some(s => s.url === snap.url)) {
+      matched.screens.push({ url: snap.url, role: null });
+    }
+  } else {
+    clusters.push({
+      id: `clust-${require('crypto').randomBytes(4).toString('hex')}`,
+      name: name || tag || 'unknown',
+      usageCount: 1,
+      classFingerprints: [classes],
+      styleFingerprints: [styleFp],
+      sizeBuckets: [sizeBucket],
+      screens: [{ url: snap.url, role: null }],
+      priorityScore: null,
+      driftScore: null,
+      driftClassification: classification.category === 'antd' ? 'antd-aligned' : (classification.category === 'custom' ? 'custom' : null),
+      driftedProperties: [],
+      evidenceCitations: [],
+      approvalStatus: 'pending',
+      confidenceMin: identity.confidence || 0,
+      confidenceMax: identity.confidence || 0,
+      confidenceAvg: identity.confidence || 0,
+    });
+  }
+}
+
+function inMemMatchScore(cluster, name, tag, classes, styleFp, sizeBucket) {
+  let score = 0; let factors = 0;
+  if (cluster.name && name && (cluster.name === name || cluster.name.includes(name) || name.includes(cluster.name))) {
+    score += 0.5;
+  }
+  factors += 0.5;
+  if (cluster.classFingerprints && cluster.classFingerprints.some(c => classes === c)) {
+    score += 0.2;
+  }
+  factors += 0.2;
+  if (cluster.sizeBuckets && cluster.sizeBuckets.includes(sizeBucket)) {
+    score += 0.15;
+  }
+  factors += 0.15;
+  if (cluster.styleFingerprints && cluster.styleFingerprints.some(s => s === styleFp)) {
+    score += 0.3;
+  }
+  factors += 0.3;
+  return factors > 0 ? score / factors : 0;
+}
+
+function inMemSizeBucket(w, h) {
+  if (w == null || h == null) return 'unknown';
+  const area = w * h;
+  if (area < 500) return 'tiny';
+  if (area < 2000) return 'small';
+  if (area < 10000) return 'medium';
+  if (area < 50000) return 'large';
+  return 'xlarge';
+}

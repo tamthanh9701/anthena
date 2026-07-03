@@ -136,4 +136,75 @@ function safeParse(str) {
   try { return JSON.parse(str); } catch { return {}; }
 }
 
-module.exports = { buildTokenInventory };
+
+
+/**
+ * Extract token inventory from normalized snapshots (in-memory, no DB).
+ * Used by analyze-session.js.
+ *
+ * @param {Array<object>} normalizedSnapshots - array from normalizer.normalizeExtensionSnapshot()
+ * @returns {object} token inventory
+ */
+function extractTokens(normalizedSnapshots) {
+  const log = logger.child({ module: 'token-inventory', method: 'extractTokens' });
+  const tokens = {};
+  const antdDefaultTokens = getAntdDefaultTokens();
+
+  for (const snap of normalizedSnapshots) {
+    for (const node of snap.componentTree || []) {
+      const styles = node.computedStyles || {};
+      const tokenCandidates = [
+        { key: styles.backgroundColor, type: 'color', name: 'backgroundColor' },
+        { key: styles.color, type: 'color', name: 'color' },
+        { key: styles.fontSize, type: 'typography', name: 'fontSize' },
+        { key: styles.fontFamily, type: 'typography', name: 'fontFamily' },
+        { key: styles.lineHeight, type: 'typography', name: 'lineHeight' },
+        { key: styles.borderRadius, type: 'border', name: 'borderRadius' },
+        { key: styles.padding, type: 'spacing', name: 'padding' },
+        { key: styles.margin, type: 'spacing', name: 'margin' },
+      ];
+
+      for (const candidate of tokenCandidates) {
+        if (!candidate.key || candidate.key === 'none' || candidate.key === '0px') continue;
+
+        const tokenName = `${candidate.type}-${candidate.name}`;
+        if (!tokens[tokenName]) {
+          tokens[tokenName] = {
+            value: candidate.key,
+            type: candidate.type,
+            source: isAntdTokenMatch(candidate.key, antdDefaultTokens, candidate.name) ? 'antd-default' : 'computed',
+            usageCount: 0,
+            screens: [],
+            confidence: 1,
+          };
+        }
+
+        tokens[tokenName].usageCount++;
+        if (!tokens[tokenName].screens.some(s => s === snap.url)) {
+          tokens[tokenName].screens.push(snap.url);
+        }
+      }
+    }
+  }
+
+  const detectedTokens = Object.keys(tokens).length;
+  const antdCoverage = {
+    totalAntdTokens: Object.keys(antdDefaultTokens).length,
+    detectedTokens,
+    coveragePercent: Object.keys(antdDefaultTokens).length > 0
+      ? Math.round((detectedTokens / Object.keys(antdDefaultTokens).length) * 1000) / 10
+      : 0,
+  };
+
+  log.info({ totalTokens: detectedTokens }, 'Token inventory built from snapshots');
+
+  return {
+    runId: normalizedSnapshots[0]?.runId || null,
+    generatedAt: new Date().toISOString(),
+    totalTokens: detectedTokens,
+    tokens,
+    antdCoverage,
+  };
+}
+
+module.exports = { buildTokenInventory, extractTokens };

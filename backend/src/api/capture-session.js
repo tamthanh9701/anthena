@@ -480,6 +480,16 @@ router.post('/:sessionId/complete', (req, res) => {
 
   logger.info({ sessionId, runId: session.runId }, 'Capture session completed, analysis queued');
 
+  // Enqueue async analysis (non-blocking)
+  const analyzeSession = require('../analyzer/analyze-session');
+  analyzeSession(sessionId).then(result => {
+    logger.info({ sessionId, status: result.status, clusters: result.clusters.length, findings: result.findings.length }, 'Session analysis complete');
+    db.prepare("UPDATE capture_sessions SET status = 'ready_for_review' WHERE id = ?").run(sessionId);
+  }).catch(err => {
+    logger.error({ sessionId, err: err.message, stack: err.stack }, 'Session analysis failed');
+    db.prepare("UPDATE capture_sessions SET status = 'failed' WHERE id = ?").run(sessionId);
+  });
+
   res.status(202).json({
     message: 'Session completed, analysis queued',
     sessionId,
