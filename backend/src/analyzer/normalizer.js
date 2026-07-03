@@ -31,7 +31,7 @@ function normalizeExtensionSnapshot(input) {
   const { metadata, nodes, styles, screenshotPath, snapshotPath, runId, sessionId, captureId } = input;
 
   // 1. Merge evidence: pair DOM nodes with computed styles
-  const componentTree = buildComponentTree(nodes, styles, runId, captureId, metadata);
+  const componentTree = buildComponentTree(nodes, styles, runId, captureId, metadata, screenshotPath);
 
   // 2. Determine antdTokens source
   const antdSource = detectAntdSource(metadata, nodes);
@@ -102,7 +102,7 @@ function normalizeExtensionSnapshot(input) {
  * @param {object} metadata
  * @returns {Array<ComponentNode>}
  */
-function buildComponentTree(nodes, styles, runId, captureId, metadata) {
+function buildComponentTree(nodes, styles, runId, captureId, metadata, screenshotPath) {
   // Index styles by selector for O(1) lookup
   const styleMap = indexStyles(styles);
 
