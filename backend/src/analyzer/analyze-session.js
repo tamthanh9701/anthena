@@ -37,7 +37,7 @@ async function analyzeSession(sessionId) {
 
   if (pages.length === 0) {
     log.warn('No uploaded pages found to analyze');
-    db.prepare("UPDATE capture_sessions SET status = 'failed', completedAt = ? WHERE id = ?")
+    db.prepare("UPDATE capture_sessions SET status = 'ready_for_review', completedAt = ? WHERE id = ?")
       .run(new Date().toISOString(), sessionId);
     return { sessionId, status: 'no_data', clusters: [], findings: [], tokenInventory: {} };
   }
@@ -185,7 +185,7 @@ async function analyzeSession(sessionId) {
   });
 
   // 8. Update session status
-  db.prepare("UPDATE capture_sessions SET status = 'failed', completedAt = ? WHERE id = ?")
+  db.prepare("UPDATE capture_sessions SET status = 'ready_for_review', completedAt = ? WHERE id = ?")
     .run(new Date().toISOString(), sessionId);
 
   // 9. Persist analysis results to DB for later retrieval
