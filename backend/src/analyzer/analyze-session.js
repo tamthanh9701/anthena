@@ -171,6 +171,7 @@ async function analyzeSession(sessionId) {
         usageCount: cluster.usageCount || 0,
         description: 'Cluster ' + cluster.name + ' appears in ' + (cluster.usageCount || 0) + ' pages (fallback, no drift detected)',
         fallback: true,
+        rank: sorted.indexOf(cluster) + 1,
       });
     }
   }
