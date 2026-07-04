@@ -372,7 +372,7 @@ async function main() {
   if (isRemote || isDocker) {
     console.log(`  → ${isDocker ? 'Docker' : 'remote'} mode: skipping file storage check`);
   } else {
-    const localPath = path.join(__dirname, '..', 'backend', 'storage', 'snapshots', 'runs', runId, 'pages', captureId);
+    const storageBase = path.join(__dirname, '..', 'backend', 'storage', 'snapshots', 'runs', runId, 'pages', captureId);
     console.log(`  → storage path: ${storageBase}`);
     const filesOk = [];
     for (const f of ['full.webp', 'snapshot.json.gz', 'metadata.json']) {
