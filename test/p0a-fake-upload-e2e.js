@@ -9,6 +9,7 @@
  */
 
 const http = require('http');
+const https = require('https');
 const path = require('path');
 const fs = require('fs');
 const zlib = require('zlib');
@@ -19,9 +20,14 @@ const ADMIN_TOKEN = process.env.ADMIN_TOKEN || 'anthena-dev-token-2026';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
+function getClient(url) {
+  return url.protocol === 'https:' ? https : http;
+}
+
 function request(method, urlPath, opts = {}) {
   return new Promise((resolve, reject) => {
     const url = new URL(urlPath, BASE);
+    const client = getClient(url);
     const headers = { ...opts.headers };
     let body = opts.body;
 
@@ -30,7 +36,7 @@ function request(method, urlPath, opts = {}) {
       headers['Content-Type'] = headers['Content-Type'] || 'application/json';
     }
 
-    const req = http.request(url, {
+    const req = client.request(url, {
       method,
       headers: { ...headers, 'Content-Length': body ? Buffer.byteLength(body) : 0 },
     }, (res) => {
@@ -66,7 +72,7 @@ function multipartRequest(method, urlPath, fields, files, authToken) {
     chunks.push(Buffer.from(`--${boundary}--\r\n`));
     const body = Buffer.concat(chunks);
 
-    const req = http.request(url, {
+    const req = getClient(url).request(url, {
       method,
       headers: {
         'Content-Type': `multipart/form-data; boundary=${boundary}`,
