@@ -366,11 +366,11 @@ async function main() {
   assert('Has clusters (summary)', clusterCount >= 1, `clusters=${clusterCount}`);
   assert('Has findings (summary)', findingCount >= 1, `findings=${findingCount}`);
 
-// Check files on disk (skip if remote or Docker — files only exist in container)
+// Check files on disk (skip if remote, Docker on ZimaOS, or container)
   const isRemote = BASE.includes('anthena.net') || BASE.includes('cloudflare');
-  const isDocker = require('fs').existsSync('/.dockerenv') || !require('child_process').execSync('which docker 2>/dev/null', { encoding: 'utf8', stdio: 'pipe' }).trim();
-  if (isRemote || isDocker) {
-    console.log(`  → ${isDocker ? 'Docker' : 'remote'} mode: skipping file storage check`);
+  const hasDocker = require('child_process').execSync('which docker 2>/dev/null', { encoding: 'utf8', stdio: 'pipe' }).trim() ? true : false;
+  if (isRemote || hasDocker || require('fs').existsSync('/.dockerenv')) {
+    console.log(`  → ${hasDocker ? 'Docker' : 'remote'} mode: skipping file storage check`);
   } else {
     const storageBase = path.join(__dirname, '..', 'backend', 'storage', 'snapshots', 'runs', runId, 'pages', captureId);
     console.log(`  → storage path: ${storageBase}`);
