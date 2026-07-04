@@ -371,7 +371,10 @@ async function main() {
   if (isRemote) {
     console.log('  → remote mode: skipping file storage check');
   } else {
-    const storageBase = path.join(__dirname, '..', 'backend', 'storage', 'snapshots', 'runs', runId, 'pages', captureId);
+    // Try Docker container path first (ZimaOS), fall back to local path
+    const containerPath = `/data/evidence/runs/${runId}/pages/${captureId}`;
+    const localPath = path.join(__dirname, '..', 'backend', 'storage', 'snapshots', 'runs', runId, 'pages', captureId);
+    const storageBase = fs.existsSync(containerPath) ? containerPath : localPath;
     console.log(`  → storage path: ${storageBase}`);
     const filesOk = [];
     for (const f of ['full.png', 'snapshot.json.gz', 'metadata.json']) {
