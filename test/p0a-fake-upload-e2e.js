@@ -366,24 +366,13 @@ async function main() {
   assert('Has clusters (summary)', clusterCount >= 1, `clusters=${clusterCount}`);
   assert('Has findings (summary)', findingCount >= 1, `findings=${findingCount}`);
 
-// Check files on disk (skip if remote — files only exist on ZimaOS)
+// Check files on disk (skip if remote or Docker — files only exist in container)
   const isRemote = BASE.includes('anthena.net') || BASE.includes('cloudflare');
-  if (isRemote) {
-    console.log('  → remote mode: skipping file storage check');
+  const isDocker = require('fs').existsSync('/.dockerenv') || !require('child_process').execSync('which docker 2>/dev/null', { encoding: 'utf8', stdio: 'pipe' }).trim();
+  if (isRemote || isDocker) {
+    console.log(`  → ${isDocker ? 'Docker' : 'remote'} mode: skipping file storage check`);
   } else {
-    // Try Docker exec for ZimaOS, fall back to local path
-    const execSync = require('child_process').execSync;
-    let isDocker = false;
-    try {
-      const out = execSync(
-        `echo 090701 | sudo -S docker exec reverse-ds-api test -f /data/evidence/snapshots/runs/${runId}/pages/${captureId}/full.webp 2>/dev/null && echo OK || echo MISS`,
-        { timeout: 5000, encoding: 'utf8', shell: '/bin/bash' }
-      ).trim();
-      isDocker = out === 'OK';
-    } catch (e) { /* docker not available */ }
-    const containerPath = `/data/evidence/snapshots/runs/${runId}/pages/${captureId}`;
     const localPath = path.join(__dirname, '..', 'backend', 'storage', 'snapshots', 'runs', runId, 'pages', captureId);
-    const storageBase = isDocker ? containerPath : localPath;
     console.log(`  → storage path: ${storageBase}`);
     const filesOk = [];
     for (const f of ['full.webp', 'snapshot.json.gz', 'metadata.json']) {
