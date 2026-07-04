@@ -372,18 +372,18 @@ async function main() {
     console.log('  → remote mode: skipping file storage check');
   } else {
     // Try Docker container path first (ZimaOS), fall back to local path
-    const containerPath = `/data/evidence/runs/${runId}/pages/${captureId}`;
+    const containerPath = `/data/evidence/snapshots/runs/${runId}/pages/${captureId}`;
     const localPath = path.join(__dirname, '..', 'backend', 'storage', 'snapshots', 'runs', runId, 'pages', captureId);
     const storageBase = fs.existsSync(containerPath) ? containerPath : localPath;
     console.log(`  → storage path: ${storageBase}`);
     const filesOk = [];
-    for (const f of ['full.png', 'snapshot.json.gz', 'metadata.json']) {
+    for (const f of ['full.webp', 'snapshot.json.gz', 'metadata.json']) {
     const fp = path.join(storageBase, f);
     const exists = fs.existsSync(fp);
     filesOk.push(exists);
     console.log(`  → ${f}: ${exists ? 'EXISTS' : 'MISSING'}`);
   }
-  assert('All storage files exist', filesOk.every(Boolean), filesOk.map((ok, i) => (['full.png', 'snapshot.json.gz', 'metadata.json'][i]) + (ok ? '' : ' MISSING')).join(', '));
+  assert('All storage files exist', filesOk.every(Boolean), filesOk.map((ok, i) => (['full.webp', 'snapshot.json.gz', 'metadata.json'][i]) + (ok ? '' : ' MISSING')).join(', '));
   }
 
   // ─── 10. Negative 1: Upload with admin token (should fail) ────────────────
