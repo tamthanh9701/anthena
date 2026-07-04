@@ -372,11 +372,15 @@ async function main() {
     console.log('  → remote mode: skipping file storage check');
   } else {
     // Try Docker exec for ZimaOS, fall back to local path
-    const dockerCheck = require('child_process').execSync(
-      `docker exec reverse-ds-api bash -c "[ -f /data/evidence/snapshots/runs/${runId}/pages/${captureId}/full.webp ] && echo OK || echo MISS"`,
-      { timeout: 5000, encoding: 'utf8' }
-    ).trim();
-    const isDocker = dockerCheck === 'OK';
+    const execSync = require('child_process').execSync;
+    let isDocker = false;
+    try {
+      const out = execSync(
+        `docker exec reverse-ds-api test -f /data/evidence/snapshots/runs/${runId}/pages/${captureId}/full.webp && echo OK`,
+        { timeout: 5000, encoding: 'utf8' }
+      ).trim();
+      isDocker = out === 'OK';
+    } catch (e) { /* docker not available */ }
     const containerPath = `/data/evidence/snapshots/runs/${runId}/pages/${captureId}`;
     const localPath = path.join(__dirname, '..', 'backend', 'storage', 'snapshots', 'runs', runId, 'pages', captureId);
     const storageBase = isDocker ? containerPath : localPath;
