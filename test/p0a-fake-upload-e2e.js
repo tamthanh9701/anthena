@@ -373,6 +373,7 @@ async function main() {
   } else {
     const storageBase = path.join(__dirname, '..', 'backend', 'storage', 'snapshots', 'runs', runId, 'pages', captureId);
     console.log(`  → storage path: ${storageBase}`);
+    const filesOk = [];
     for (const f of ['full.png', 'snapshot.json.gz', 'metadata.json']) {
     const fp = path.join(storageBase, f);
     const exists = fs.existsSync(fp);
