@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const DEFAULT_API_BASE_URL = 'https://anthena.example.com';
+const DEFAULT_API_BASE_URL = 'http://localhost:3001';
 const DEFAULT_ADMIN_TOKEN = 'dev-token-anthena-2026';
 const DEFAULT_MODULE = 'orders';
 const DEFAULT_ENV = 'staging';
