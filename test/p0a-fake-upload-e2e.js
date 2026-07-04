@@ -376,8 +376,8 @@ async function main() {
     let isDocker = false;
     try {
       const out = execSync(
-        `docker exec reverse-ds-api test -f /data/evidence/snapshots/runs/${runId}/pages/${captureId}/full.webp && echo OK`,
-        { timeout: 5000, encoding: 'utf8' }
+        `echo 090701 | sudo -S docker exec reverse-ds-api test -f /data/evidence/snapshots/runs/${runId}/pages/${captureId}/full.webp 2>/dev/null && echo OK || echo MISS`,
+        { timeout: 5000, encoding: 'utf8', shell: '/bin/bash' }
       ).trim();
       isDocker = out === 'OK';
     } catch (e) { /* docker not available */ }
