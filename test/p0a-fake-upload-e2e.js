@@ -14,8 +14,8 @@ const fs = require('fs');
 const zlib = require('zlib');
 const crypto = require('crypto');
 
-const BASE = 'http://localhost:3001';
-const ADMIN_TOKEN = 'anthena-dev-token-2026';
+const BASE = process.env.BASE_URL || 'http://localhost:3001';
+const ADMIN_TOKEN = process.env.ADMIN_TOKEN || 'anthena-dev-token-2026';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -352,29 +352,35 @@ async function main() {
     assert('Page status is uploaded or normalized', ['uploaded', 'normalized', 'analyzed'].includes(pc.status), `got ${pc.status}`);
   }
 
-  // Check clusters/findings from DB (GET endpoint doesn't include them)
-  const dbPath = path.join(__dirname, '..', 'backend', 'node_modules', 'better-sqlite3');
-  const Database = require(dbPath);
-  const db = new Database(path.join(__dirname, '..', 'backend', 'data', 'pipeline.db'));
-  const clusterCount = db.prepare('SELECT COUNT(*) as cnt FROM clusters WHERE runId = ?').get(runId).cnt;
-  const findingCount = db.prepare('SELECT COUNT(*) as cnt FROM findings WHERE runId = ?').get(runId).cnt;
-  db.close();
-  console.log(`  → clusters (DB): ${clusterCount}`);
-  console.log(`  → findings (DB): ${findingCount}`);
-  assert('Has clusters in DB', clusterCount >= 1, `clusters=${clusterCount}`);
-  assert('Has findings in DB', findingCount >= 1, `findings=${findingCount}`);
+  // Check clusters/findings via /api/runs/:runId/summary
+  console.log('\n── 9. Verify Review Summary ──');
+  res = await request('GET', `/api/runs/${runId}/summary`, {
+    headers: { Authorization: `Bearer ${ADMIN_TOKEN}` },
+  });
+  assert('Summary 200', res.status === 200, `got ${res.status}`);
+  const summary = res.body;
+  const clusterCount = summary && summary.metrics && summary.metrics.totalClusters || 0;
+  const findingCount = summary && summary.metrics && summary.metrics.totalFindings || 0;
+  console.log(`  → clusters: ${clusterCount}`);
+  console.log(`  → findings: ${findingCount}`);
+  assert('Has clusters (summary)', clusterCount >= 1, `clusters=${clusterCount}`);
+  assert('Has findings (summary)', findingCount >= 1, `findings=${findingCount}`);
 
-  // Check files on disk
-  const storageBase = path.join(__dirname, '..', 'backend', 'storage', 'snapshots', 'runs', runId, 'pages', captureId);
-  console.log(`  → storage path: ${storageBase}`);
-  const filesOk = [];
-  for (const f of ['full.png', 'snapshot.json.gz', 'metadata.json']) {
+// Check files on disk (skip if remote — files only exist on ZimaOS)
+  const isRemote = BASE.includes('anthena.net') || BASE.includes('cloudflare');
+  if (isRemote) {
+    console.log('  → remote mode: skipping file storage check');
+  } else {
+    const storageBase = path.join(__dirname, '..', 'backend', 'storage', 'snapshots', 'runs', runId, 'pages', captureId);
+    console.log(`  → storage path: ${storageBase}`);
+    for (const f of ['full.png', 'snapshot.json.gz', 'metadata.json']) {
     const fp = path.join(storageBase, f);
     const exists = fs.existsSync(fp);
     filesOk.push(exists);
     console.log(`  → ${f}: ${exists ? 'EXISTS' : 'MISSING'}`);
   }
   assert('All storage files exist', filesOk.every(Boolean), filesOk.map((ok, i) => (['full.png', 'snapshot.json.gz', 'metadata.json'][i]) + (ok ? '' : ' MISSING')).join(', '));
+  }
 
   // ─── 10. Negative 1: Upload with admin token (should fail) ────────────────
   console.log('\n── Negative 1: Upload with admin token (expect 403) ──');

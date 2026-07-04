@@ -98,6 +98,7 @@ function buildRunSummary(runId) {
   
   const snapshots = db.prepare("SELECT * FROM snapshots WHERE runId = ?").all(runId);
   const clusters = db.prepare("SELECT * FROM clusters WHERE runId = ? ORDER BY priorityScore DESC").all(runId);
+  const findings = db.prepare("SELECT COUNT(*) as cnt FROM findings WHERE runId = ?").get(runId);
   
   // Compute timing
   const startedAt = run.startedAt ? new Date(run.startedAt) : null;
@@ -137,6 +138,7 @@ function buildRunSummary(runId) {
       totalNodes: nodeCountResult?.count || 0,
       totalClusters: clusters.length,
       topDriftScore: clusters.length > 0 ? Math.max(...clusters.map(c => c.driftScore || 0)) : null,
+      totalFindings: findings?.cnt || 0,
       crawlDuration,
       extractionDuration: crawlDuration,
       analysisDuration: null,
