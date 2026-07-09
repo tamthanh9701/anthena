@@ -1,10 +1,26 @@
+/**
+ * Capture Button V2 — shows active manifest info and captures.
+ *
+ * @typedef {import('../shared/schema.js').ScenarioManifest} ScenarioManifest
+ */
+
 import React, { useState } from 'react';
 
-export default function CaptureButton({ sessionState, onCapture, disabled, capturing }) {
+/** @param {{
+ *   sessionState: any,
+ *   onCapture: (routeKey: string) => void,
+ *   disabled: boolean,
+ *   capturing: boolean,
+ *   activeManifest: ScenarioManifest|null
+ * }} props */
+export default function CaptureButton({ sessionState, onCapture, disabled, capturing, activeManifest }) {
   const [routeKey, setRouteKey] = useState('');
 
   const handleCapture = () => {
-    const key = routeKey.trim() || `route-${Date.now()}`;
+    // Derive routeKey from manifest, or use manual input
+    const key = routeKey.trim() || (activeManifest
+      ? `${activeManifest.route.replace(/^\//, '').replace(/\//g, '-')}-${activeManifest.role}-${activeManifest.theme}`
+      : `route-${Date.now()}`);
     onCapture(key);
     setRouteKey('');
   };
@@ -14,12 +30,14 @@ export default function CaptureButton({ sessionState, onCapture, disabled, captu
       <h2 style={{ margin: '0 0 8px 0', fontSize: 13, fontWeight: 600, color: '#595959' }}>Capture</h2>
 
       <div style={{ marginBottom: 8 }}>
-        <label style={{ display: 'block', fontSize: 11, color: '#8c8c8c', marginBottom: 2 }}>Route Key (optional)</label>
+        <label style={{ display: 'block', fontSize: 11, color: '#8c8c8c', marginBottom: 2 }}>
+          Route Key (optional; auto from page or manifest if blank)
+        </label>
         <input
           type="text"
           value={routeKey}
-          onChange={e => setRouteKey(e.target.value)}
-          placeholder="orders-create"
+          onChange={(e) => setRouteKey(e.target.value)}
+          placeholder={activeManifest ? `${activeManifest.route}_${activeManifest.role}_${activeManifest.theme}` : 'orders-create'}
           style={{
             width: '100%',
             padding: '4px 8px',
@@ -60,7 +78,7 @@ export default function CaptureButton({ sessionState, onCapture, disabled, captu
         ) : (
           <>
             <span>📸</span>
-            Capture Current Page
+            {activeManifest ? 'Capture Current Scenario' : 'Quick Capture Current Page'}
           </>
         )}
       </button>

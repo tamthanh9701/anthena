@@ -1,17 +1,17 @@
-// ─── Upload Client ──────────────────────────────────────────────────────
-// Handles uploading capture packages to the ZimaOS backend.
-// Used by both service-worker and popup.
+/**
+ * Upload Client V2
+ * Handles uploading Evidence Packages to the backend.
+ * V2: supports both legacy and Evidence Package uploads.
+ *
+ * @typedef {import('../shared/schema.js').EvidenceMetadata} EvidenceMetadata
+ * @typedef {import('../shared/schema.js').CaptureSessionResponse} CaptureSessionResponse
+ */
 
 import { NetworkError, AuthError, fetchWithTimeout } from '../shared/errors.js';
 import { SCHEMA_VERSION, EXTRACTOR_VERSION } from '../shared/schema.js';
 
 /**
- * @typedef {import('../shared/schema.js').SnapshotMetadata} SnapshotMetadata
- * @typedef {import('../shared/schema.js').CaptureSessionResponse} CaptureSessionResponse
- */
-
-/**
- * Upload a capture package to the backend
+ * Upload a legacy capture package (V1 compat).
  * @param {{
  *   uploadUrl: string,
  *   uploadToken: string,
@@ -114,13 +114,13 @@ export async function uploadCapturePackage({
       'X-Anthena-Capture-Id': captureId,
     },
     body: formData,
-  }, 60000); // 60s timeout for upload
+  }, 60000);
 
   return await response.json();
 }
 
 /**
- * Gzip compress a string
+ * Gzip compress a string.
  * @param {string} data
  * @returns {Promise<Blob>}
  */

@@ -1,5 +1,5 @@
 ﻿import React, { useState, useRef } from 'react';
-import { Table, Tag, Card, Descriptions, Button, Typography, Space, Alert } from 'antd';
+import { Table, Tag, Card, Descriptions, Button, Typography, Space } from 'antd';
 import { DownloadOutlined, PrinterOutlined } from '@ant-design/icons';
 import { useParams } from 'react-router-dom';
 import { useSignalReport } from '../hooks';
@@ -10,7 +10,7 @@ const { Text } = Typography;
 const SignalReliabilityReportPage: React.FC = () => {
   const { runId: paramId } = useParams<{ runId: string }>();
   const [selectedRunId, setSelectedRunId] = useState<string | null>(paramId || null);
-  const { data: report, loading, error } = useSignalReport(selectedRunId);
+  const { data: report, isLoading: loading } = useSignalReport(selectedRunId);
   const reportRef = useRef<HTMLDivElement>(null);
 
   const handleExport = () => {

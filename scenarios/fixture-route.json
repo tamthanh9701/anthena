@@ -1,0 +1,33 @@
+{
+  "scenario": {
+    "name": "Dashboard (Admin, Light, EN-US)",
+    "description": "Capture Ant Design dashboard with admin role, light theme, English locale",
+    "routes": ["/dashboard"],
+    "roles": ["admin"],
+    "viewport": { "width": 1440, "height": 900 },
+    "theme": "light",
+    "locale": "en-US",
+    "antdVersion": "5"
+  },
+  "expectedSignals": {
+    "dom-structure": "present",
+    "css-computed": "present",
+    "rect": "present",
+    "antd-classes": "present",
+    "antd-tokens": "present",
+    "react-fiber": "present",
+    "a11y-tree": "present"
+  },
+  "expectedDrift": {
+    "antd-aligned": ["ant-btn-primary", "ant-input"],
+    "drifted": ["ant-custom-header"],
+    "custom": []
+  },
+  "expectedTokens": {
+    "colorPrimary": "#1677ff",
+    "borderRadius": "6px",
+    "colorError": "#ff4d4f",
+    "colorSuccess": "#52c41a",
+    "fontSize": "14px"
+  }
+}

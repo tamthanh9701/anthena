@@ -1,12 +1,24 @@
-﻿import React, { useState } from 'react';
-import { Table, Tag, Button, Space, Progress, message, Typography, Popconfirm } from 'antd';
-import { DeleteOutlined, ReloadOutlined, EyeOutlined } from '@ant-design/icons';
+import React, { useState } from 'react';
+import { Alert, Table, Tag, Button, Space, Progress, message, Typography, Popconfirm, Modal } from 'antd';
+import { CopyOutlined, DeleteOutlined, ReloadOutlined, EyeOutlined, PlusOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useRuns, useRunProgress } from '../hooks';
 import { PageHeader, StatusTag, LoadingSkeleton, EmptyState } from '../components';
 import type { RunSummary } from '../types';
 
-const { Text } = Typography;
+const { Paragraph, Text } = Typography;
+
+function getApiBaseUrl() {
+  return window.location.origin;
+}
+
+function getExtensionConfig(runId: string) {
+  return `API Base URL: ${getApiBaseUrl()}\nRun ID: ${runId}`;
+}
+
+function getErrorMessage(err: any, fallback: string) {
+  return err?.error || err?.message || fallback;
+}
 
 const RunListPage: React.FC = () => {
   const navigate = useNavigate();
@@ -17,12 +29,49 @@ const RunListPage: React.FC = () => {
   const runningRun = runs.find((r) => r.status === 'running' || r.status === 'pending');
   if (runningRun && !activeRunId) setActiveRunId(runningRun.runId);
 
+  const showRunCreatedModal = (runId: string, totalRoutes: number) => {
+    Modal.success({
+      title: 'Run created',
+      width: 560,
+      content: (
+        <Space direction="vertical" style={{ width: '100%' }}>
+          <Text>Use this full Run ID in the Anthena extension upload target.</Text>
+          <Paragraph copyable={{ text: runId }} code style={{ marginBottom: 0 }}>
+            {runId}
+          </Paragraph>
+          <Text type="secondary">Extension config:</Text>
+          <Paragraph copyable={{ text: getExtensionConfig(runId) }} code style={{ whiteSpace: 'pre-wrap', marginBottom: 0 }}>
+            {getExtensionConfig(runId)}
+          </Paragraph>
+          {totalRoutes === 0 && (
+            <Alert
+              type="info"
+              showIcon
+              message="No crawler routes are configured"
+              description="This run is still usable as an extension upload container. Crawler route coverage can be configured later."
+            />
+          )}
+        </Space>
+      ),
+    });
+  };
+
+  const handleCreateExtensionRun = async () => {
+    try {
+      const result = await createRun.mutateAsync({ mode: 'all' });
+      showRunCreatedModal(result.runId, result.totalRoutes);
+      message.success(`Run created: ${result.runId}`);
+    } catch (err: any) {
+      message.error(getErrorMessage(err, 'Failed to create extension capture run'));
+    }
+  };
+
   const handleDelete = async (runId: string) => {
     try {
       await deleteRun.mutateAsync(runId);
       message.success('Run deleted');
     } catch (err: any) {
-      message.error(err?.error || 'Failed to delete run');
+      message.error(getErrorMessage(err, 'Failed to delete run'));
     }
   };
 
@@ -32,8 +81,13 @@ const RunListPage: React.FC = () => {
       message.success('Run resumed');
       refetch();
     } catch (err: any) {
-      message.error(err?.error || 'Failed to resume run');
+      message.error(getErrorMessage(err, 'Failed to resume run'));
     }
+  };
+
+  const handleCopyExtensionConfig = async (runId: string) => {
+    await navigator.clipboard?.writeText(getExtensionConfig(runId));
+    message.success('Extension config copied');
   };
 
   const columns = [
@@ -41,7 +95,7 @@ const RunListPage: React.FC = () => {
       title: 'Run ID',
       dataIndex: 'runId',
       key: 'runId',
-      render: (id: string) => <Text code>{id.slice(0, 12)}...</Text>,
+      render: (id: string) => <Text code copyable={{ text: id }}>{id}</Text>,
     },
     {
       title: 'Status',
@@ -86,7 +140,14 @@ const RunListPage: React.FC = () => {
       title: 'Actions',
       key: 'actions',
       render: (_: any, r: RunSummary) => (
-        <Space>
+        <Space wrap>
+          <Button
+            size="small"
+            icon={<CopyOutlined />}
+            onClick={() => handleCopyExtensionConfig(r.runId)}
+          >
+            Copy Extension Config
+          </Button>
           {r.status === 'completed' && (
             <Button
               size="small"
@@ -123,10 +184,30 @@ const RunListPage: React.FC = () => {
         subtitle={total + ' total runs'}
       />
 
+      <Alert
+        type="info"
+        showIcon
+        style={{ marginBottom: 16 }}
+        message="Extension capture setup"
+        description="Create an extension capture run, copy its full Run ID, then paste it into the Anthena browser extension with this site origin as the API Base URL."
+        action={
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            loading={createRun.isPending}
+            onClick={handleCreateExtensionRun}
+          >
+            Create Extension Capture Run
+          </Button>
+        }
+      />
+
       {runningRun && progress && (
         <div style={{ marginBottom: 16, padding: 16, background: '#f6f8fa', borderRadius: 8 }}>
           <Space direction="vertical" style={{ width: '100%' }}>
-            <Text strong>Active Run: {activeRunId?.slice(0, 12)}...</Text>
+            <Text strong>
+              Active Run: <Text code copyable={{ text: activeRunId || '' }}>{activeRunId}</Text>
+            </Text>
             <Progress percent={Math.round(progress.progress)} status="active" />
             <Space>
               <Tag color="processing">{progress.currentStage}</Tag>
@@ -147,8 +228,8 @@ const RunListPage: React.FC = () => {
         {runs.length === 0 ? (
           <EmptyState
             message="No runs yet"
-            actionLabel="Create First Run"
-            onAction={() => createRun.mutate({ mode: 'all' })}
+            actionLabel="Create Extension Capture Run"
+            onAction={handleCreateExtensionRun}
           />
         ) : (
           <Table

@@ -1,0 +1,416 @@
+{
+  "_info": "Static labeled fixture for AntD multiclass precision. Labels established by visual inspection of AntD docs, NOT derived from adapter implementation. Cases: positive (known AntD class → component), ambiguous (class matches multiple possible components), negative (non-AntD class).",
+  "_versions_labeled": ["v4", "v5", "v6"],
+  "fixtures": [
+    {
+      "id": "v5-btn-primary",
+      "version": "5",
+      "classList": ["ant-btn", "ant-btn-primary"],
+      "tag": "button",
+      "expected": "Button",
+      "type": "positive"
+    },
+    {
+      "id": "v5-btn-default",
+      "version": "5",
+      "classList": ["ant-btn", "ant-btn-default"],
+      "tag": "button",
+      "expected": "Button",
+      "type": "positive"
+    },
+    {
+      "id": "v5-input-text",
+      "version": "5",
+      "classList": ["ant-input"],
+      "tag": "input",
+      "expected": "Input",
+      "type": "positive"
+    },
+    {
+      "id": "v5-input-affix",
+      "version": "5",
+      "classList": ["ant-input-affix-wrapper"],
+      "tag": "span",
+      "expected": "Input",
+      "type": "positive"
+    },
+    {
+      "id": "v5-table",
+      "version": "5",
+      "classList": ["ant-table"],
+      "tag": "div",
+      "expected": "Table",
+      "type": "positive"
+    },
+    {
+      "id": "v5-table-row",
+      "version": "5",
+      "classList": ["ant-table-row"],
+      "tag": "tr",
+      "expected": "Table",
+      "type": "positive"
+    },
+    {
+      "id": "v5-card",
+      "version": "5",
+      "classList": ["ant-card", "ant-card-bordered"],
+      "tag": "div",
+      "expected": "Card",
+      "type": "positive"
+    },
+    {
+      "id": "v5-card-head",
+      "version": "5",
+      "classList": ["ant-card-head"],
+      "tag": "div",
+      "expected": "Card",
+      "type": "positive"
+    },
+    {
+      "id": "v5-modal",
+      "version": "5",
+      "classList": ["ant-modal"],
+      "tag": "div",
+      "expected": "Modal",
+      "type": "positive"
+    },
+    {
+      "id": "v5-tag",
+      "version": "5",
+      "classList": ["ant-tag"],
+      "tag": "span",
+      "expected": "Tag",
+      "type": "positive"
+    },
+    {
+      "id": "v5-checkbox",
+      "version": "5",
+      "classList": ["ant-checkbox"],
+      "tag": "label",
+      "expected": "Checkbox",
+      "type": "positive"
+    },
+    {
+      "id": "v5-radio",
+      "version": "5",
+      "classList": ["ant-radio"],
+      "tag": "label",
+      "expected": "Radio",
+      "type": "positive"
+    },
+    {
+      "id": "v5-select",
+      "version": "5",
+      "classList": ["ant-select"],
+      "tag": "div",
+      "expected": "Select",
+      "type": "positive"
+    },
+    {
+      "id": "v5-menu",
+      "version": "5",
+      "classList": ["ant-menu", "ant-menu-horizontal"],
+      "tag": "ul",
+      "expected": "Menu",
+      "type": "positive"
+    },
+    {
+      "id": "v5-form",
+      "version": "5",
+      "classList": ["ant-form"],
+      "tag": "form",
+      "expected": "Form",
+      "type": "positive"
+    },
+    {
+      "id": "v5-switch",
+      "version": "5",
+      "classList": ["ant-switch"],
+      "tag": "button",
+      "expected": "Switch",
+      "type": "positive"
+    },
+    {
+      "id": "v5-tabs",
+      "version": "5",
+      "classList": ["ant-tabs", "ant-tabs-tab"],
+      "tag": "div",
+      "expected": "Tabs",
+      "type": "positive"
+    },
+    {
+      "id": "v5-datepicker",
+      "version": "5",
+      "classList": ["ant-picker"],
+      "tag": "div",
+      "expected": "DatePicker",
+      "type": "positive"
+    },
+    {
+      "id": "v5-tooltip",
+      "version": "5",
+      "classList": ["ant-tooltip"],
+      "tag": "div",
+      "expected": "Tooltip",
+      "type": "positive"
+    },
+    {
+      "id": "v5-popover",
+      "version": "5",
+      "classList": ["ant-popover"],
+      "tag": "div",
+      "expected": "Popover",
+      "type": "positive"
+    },
+    {
+      "id": "v5-badge",
+      "version": "5",
+      "classList": ["ant-badge"],
+      "tag": "span",
+      "expected": "Badge",
+      "type": "positive"
+    },
+    {
+      "id": "v5-progress",
+      "version": "5",
+      "classList": ["ant-progress"],
+      "tag": "div",
+      "expected": "Progress",
+      "type": "positive"
+    },
+    {
+      "id": "v5-slider",
+      "version": "5",
+      "classList": ["ant-slider"],
+      "tag": "div",
+      "expected": "Slider",
+      "type": "positive"
+    },
+    {
+      "id": "v5-drawer",
+      "version": "5",
+      "classList": ["ant-drawer"],
+      "tag": "div",
+      "expected": "Drawer",
+      "type": "positive"
+    },
+    {
+      "id": "v4-btn-primary",
+      "version": "4",
+      "classList": ["ant-btn", "ant-btn-primary"],
+      "tag": "button",
+      "expected": "Button",
+      "type": "positive"
+    },
+    {
+      "id": "v4-input",
+      "version": "4",
+      "classList": ["ant-input"],
+      "tag": "input",
+      "expected": "Input",
+      "type": "positive"
+    },
+    {
+      "id": "v4-table",
+      "version": "4",
+      "classList": ["ant-table"],
+      "tag": "div",
+      "expected": "Table",
+      "type": "positive"
+    },
+    {
+      "id": "v4-card",
+      "version": "4",
+      "classList": ["ant-card"],
+      "tag": "div",
+      "expected": "Card",
+      "type": "positive"
+    },
+    {
+      "id": "v4-modal",
+      "version": "4",
+      "classList": ["ant-modal"],
+      "tag": "div",
+      "expected": "Modal",
+      "type": "positive"
+    },
+    {
+      "id": "v4-select",
+      "version": "4",
+      "classList": ["ant-select"],
+      "tag": "div",
+      "expected": "Select",
+      "type": "positive"
+    },
+    {
+      "id": "v4-checkbox",
+      "version": "4",
+      "classList": ["ant-checkbox"],
+      "tag": "label",
+      "expected": "Checkbox",
+      "type": "positive"
+    },
+    {
+      "id": "v4-radio",
+      "version": "4",
+      "classList": ["ant-radio"],
+      "tag": "label",
+      "expected": "Radio",
+      "type": "positive"
+    },
+    {
+      "id": "v4-form",
+      "version": "4",
+      "classList": ["ant-form"],
+      "tag": "form",
+      "expected": "Form",
+      "type": "positive"
+    },
+    {
+      "id": "v4-menu",
+      "version": "4",
+      "classList": ["ant-menu"],
+      "tag": "ul",
+      "expected": "Menu",
+      "type": "positive"
+    },
+    {
+      "id": "v6-btn-primary",
+      "version": "6",
+      "classList": ["ant-btn", "ant-btn-primary"],
+      "tag": "button",
+      "expected": "Button",
+      "type": "positive"
+    },
+    {
+      "id": "v6-input",
+      "version": "6",
+      "classList": ["ant-input"],
+      "tag": "input",
+      "expected": "Input",
+      "type": "positive"
+    },
+    {
+      "id": "v6-table",
+      "version": "6",
+      "classList": ["ant-table"],
+      "tag": "div",
+      "expected": "Table",
+      "type": "positive"
+    },
+    {
+      "id": "v6-tag",
+      "version": "6",
+      "classList": ["ant-tag"],
+      "tag": "span",
+      "expected": "Tag",
+      "type": "positive"
+    },
+    {
+      "id": "v6-card",
+      "version": "6",
+      "classList": ["ant-card"],
+      "tag": "div",
+      "expected": "Card",
+      "type": "positive"
+    },
+    {
+      "id": "v6-modal",
+      "version": "6",
+      "classList": ["ant-modal"],
+      "tag": "div",
+      "expected": "Modal",
+      "type": "positive"
+    },
+    {
+      "id": "v6-select",
+      "version": "6",
+      "classList": ["ant-select"],
+      "tag": "div",
+      "expected": "Select",
+      "type": "positive"
+    },
+    {
+      "id": "v6-checkbox",
+      "version": "6",
+      "classList": ["ant-checkbox"],
+      "tag": "label",
+      "expected": "Checkbox",
+      "type": "positive"
+    },
+    {
+      "id": "v6-badge",
+      "version": "6",
+      "classList": ["ant-badge"],
+      "tag": "span",
+      "expected": "Badge",
+      "type": "positive"
+    },
+    {
+      "id": "ambiguous-multi-class",
+      "version": "5",
+      "classList": ["ant-btn", "ant-input"],
+      "tag": "div",
+      "expected": "Button",
+      "note": "Node has both ant-btn and ant-input. Classifier MUST pick one; first match wins. Label: Button (first in CLASS_TO_COMPONENT key order).",
+      "type": "ambiguous"
+    },
+    {
+      "id": "ambiguous-card-modal",
+      "version": "5",
+      "classList": ["ant-card", "ant-modal"],
+      "tag": "div",
+      "expected": "Card",
+      "note": "Node has both ant-card and ant-modal. First match: Card.",
+      "type": "ambiguous"
+    },
+    {
+      "id": "non-antd-bootstrap",
+      "version": "5",
+      "classList": ["btn", "btn-primary"],
+      "tag": "button",
+      "expected": null,
+      "type": "negative"
+    },
+    {
+      "id": "non-antd-tailwind",
+      "version": "5",
+      "classList": ["flex", "items-center", "bg-blue-500"],
+      "tag": "div",
+      "expected": null,
+      "type": "negative"
+    },
+    {
+      "id": "non-antd-custom",
+      "version": "5",
+      "classList": ["my-custom-class", "sidebar-widget"],
+      "tag": "div",
+      "expected": null,
+      "type": "negative"
+    },
+    {
+      "id": "non-antd-html-default",
+      "version": "5",
+      "classList": [],
+      "tag": "div",
+      "expected": null,
+      "type": "negative"
+    },
+    {
+      "id": "non-antd-plain-button",
+      "version": "5",
+      "classList": ["submit-button"],
+      "tag": "button",
+      "expected": null,
+      "type": "negative"
+    },
+    {
+      "id": "non-antd-material-ui",
+      "version": "5",
+      "classList": ["MuiButton-root", "MuiButton-contained"],
+      "tag": "button",
+      "expected": null,
+      "type": "negative"
+    }
+  ]
+}

@@ -9,7 +9,7 @@ const { Text } = Typography;
 const RunSummaryPage: React.FC = () => {
   const { runId: paramId } = useParams<{ runId: string }>();
   const [selectedRunId, setSelectedRunId] = useState<string | null>(paramId || null);
-  const { data: summary, loading } = useRunSummary(selectedRunId);
+  const { data: summary, isLoading: loading } = useRunSummary(selectedRunId);
 
   const formatDuration = (seconds: number) => {
     if (seconds < 60) return Math.round(seconds) + 's';

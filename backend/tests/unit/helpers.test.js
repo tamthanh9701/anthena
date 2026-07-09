@@ -66,8 +66,8 @@ describe('paginate', () => {
     expect(paginate(-5)).toEqual({ page: 1, limit: 20, offset: 0 });
   });
 
-  it('handles limit=0 by falling back to default 20', () => {
-    expect(paginate(1, 0)).toEqual({ page: 1, limit: 20, offset: 0 });
+  it('handles limit=0 by clamping to 1', () => {
+    expect(paginate(1, 0)).toEqual({ page: 1, limit: 1, offset: 0 });
   });
 
   it('clamps limit to max 100', () => {
