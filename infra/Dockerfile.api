@@ -53,7 +53,10 @@ COPY backend/src/ ./src/
 WORKDIR /app
 COPY web-ui/package.json web-ui/package-lock.json ./web-ui/
 WORKDIR /app/web-ui
-RUN npm ci --omit=dev
+# Vite and @vitejs/plugin-react are build-time devDependencies; install them for
+# the static Web UI build. The web-ui node_modules directory is not used at API
+# runtime because only ../backend/public is served.
+RUN npm ci
 COPY web-ui/ ./
 RUN npx vite build --outDir ../backend/public
 

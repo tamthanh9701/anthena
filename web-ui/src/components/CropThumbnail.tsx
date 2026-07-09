@@ -1,6 +1,6 @@
 import React from 'react';
 import { Image } from 'antd';
-import { getNodeThumbnailUrl, getNodeCropUrl } from '../api/endpoints';
+import { getNodeThumbnailUrl } from '../api/endpoints';
 
 interface CropThumbnailProps {
   snapshotId?: string;

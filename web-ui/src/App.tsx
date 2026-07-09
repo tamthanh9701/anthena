@@ -1,9 +1,12 @@
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense, lazy, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { ConfigProvider, Spin, theme } from 'antd';
+import { Button, Card, ConfigProvider, Form, Input, Spin, Typography } from 'antd';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import AppLayout from './layouts/AppLayout';
 import { RunsProvider } from './layouts/RunsContext';
+import { setSessionToken } from './api/client';
+
+const { Paragraph, Text, Title } = Typography;
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -34,6 +37,15 @@ const Loading = () => (
 );
 
 const App: React.FC = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  const handleTokenSubmit = ({ token }: { token: string }) => {
+    const trimmedToken = token.trim();
+    if (!trimmedToken) return;
+    setSessionToken(trimmedToken);
+    setIsAuthenticated(true);
+  };
+
   return (
     <QueryClientProvider client={queryClient}>
       <ConfigProvider
@@ -44,6 +56,40 @@ const App: React.FC = () => {
           },
         }}
       >
+        {!isAuthenticated ? (
+          <div
+            style={{
+              minHeight: '100vh',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: '#f5f5f5',
+              padding: 24,
+            }}
+          >
+            <Card style={{ width: '100%', maxWidth: 420 }}>
+              <Title level={3} style={{ marginTop: 0 }}>Anthena Web UI</Title>
+              <Paragraph type="secondary">
+                Enter the admin API token for this session. The token is kept in memory only and is cleared when the page refreshes.
+              </Paragraph>
+              <Form layout="vertical" onFinish={handleTokenSubmit}>
+                <Form.Item
+                  label="Admin API token"
+                  name="token"
+                  rules={[{ required: true, message: 'Enter the admin API token' }]}
+                >
+                  <Input.Password autoFocus autoComplete="off" placeholder="Paste token" />
+                </Form.Item>
+                <Button type="primary" htmlType="submit" block>
+                  Open dashboard
+                </Button>
+              </Form>
+              <Text type="secondary" style={{ display: 'block', marginTop: 16 }}>
+                The static UI loads publicly; API actions require Bearer auth.
+              </Text>
+            </Card>
+          </div>
+        ) : (
         <BrowserRouter>
           <RunsProvider>
             <Suspense fallback={<Loading />}>
@@ -66,6 +112,7 @@ const App: React.FC = () => {
             </Suspense>
           </RunsProvider>
         </BrowserRouter>
+        )}
       </ConfigProvider>
     </QueryClientProvider>
   );

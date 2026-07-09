@@ -1,0 +1,178 @@
+# V2 Docker topology: Postgres + MinIO + Redis (optional) + API
+# V1 volumes/db-data, evidence-store, config-data preserved for backward compat
+
+services:
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - LOG_LEVEL=info
+      - STORAGE_PATH=/app/storage
+      - DB_PATH=/app/data
+      # V2 config
+      - V2_ENABLED=true
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=anthena_v2
+      - POSTGRES_USER=anthena
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-anthena_secret}
+      - MINIO_ENDPOINT=minio:9000
+      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-minioadmin}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-minioadmin}
+      - MINIO_BUCKET=evidence-pkg
+      - MINIO_USE_SSL=false
+      # OIDC (provider-neutral)
+      - OIDC_ISSUER_URL=${OIDC_ISSUER_URL:-http://localhost:8080/realms/anthena}
+      - OIDC_CLIENT_ID=${OIDC_CLIENT_ID:-anthena-api}
+      - OIDC_CLIENT_SECRET=${OIDC_CLIENT_SECRET:-}
+      - OIDC_REDIRECT_URL=${OIDC_REDIRECT_URL:-http://localhost:3001/api/v2/auth/oidc/callback}
+      # Figma (mock in dev)
+      - FIGMA_ACCESS_TOKEN=${FIGMA_ACCESS_TOKEN:-}
+      - FIGMA_FILE_KEY=${FIGMA_FILE_KEY:-}
+    volumes:
+      - evidence-store:/app/storage
+      - db-data:/app/data
+      - ./config:/app/config:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/health',(r)=>{process.exit(r.statusCode===200?0:1)})"]
+      interval: 30s
+      start_period: 60s
+      retries: 3
+      timeout: 10s
+    stop_grace_period: 30s
+    networks:
+      - v2-net
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_DB=anthena_v2
+      - POSTGRES_USER=anthena
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-anthena_secret}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./backend/src/v2/migrations:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U anthena -d anthena_v2"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - v2-net
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ACCESS_KEY:-minioadmin}
+      - MINIO_ROOT_PASSWORD=${MINIO_SECRET_KEY:-minioadmin}
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    restart: unless-stopped
+    networks:
+      - v2-net
+
+  minio-init:
+    image: minio/mc:latest
+    depends_on:
+      minio:
+        condition: service_healthy
+    environment:
+      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-minioadmin}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-minioadmin}
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set local http://minio:9000 \"$$MINIO_ACCESS_KEY\" \"$$MINIO_SECRET_KEY\" &&
+      mc mb --ignore-existing local/evidence-pkg
+      "
+    restart: "no"
+    networks:
+      - v2-net
+
+  # Redis (optional, v2.1+ for caching)
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - v2-net
+    profiles:
+      - cache
+      - full
+
+  # PgBoss worker (optional for async processing)
+  worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: node src/v2/worker.js
+    environment:
+      - NODE_ENV=production
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=anthena_v2
+      - POSTGRES_USER=anthena
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-anthena_secret}
+      - MINIO_ENDPOINT=minio:9000
+      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-minioadmin}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-minioadmin}
+      - MINIO_BUCKET=evidence-pkg
+      - MINIO_USE_SSL=false
+    volumes:
+      - evidence-store:/app/storage
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - v2-net
+    profiles:
+      - full
+
+volumes:
+  evidence-store:
+    driver: local
+  db-data:
+    driver: local
+  postgres-data:
+    driver: local
+  minio-data:
+    driver: local
+
+networks:
+  v2-net:
+    driver: bridge

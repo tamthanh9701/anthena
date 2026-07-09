@@ -1,6 +1,6 @@
 ﻿import React, { useState } from 'react';
 import { Tabs, Table, Button, Tag, Space, Badge, Modal, message, Typography, Tooltip, Empty } from 'antd';
-import { CheckCircleOutlined, CloseCircleOutlined, SyncOutlined, DownloadOutlined } from '@ant-design/icons';
+import { SyncOutlined, DownloadOutlined } from '@ant-design/icons';
 import { useParams } from 'react-router-dom';
 import { useApproveQueue } from '../hooks';
 import { PageHeader, RunSelector, CropThumbnail, LoadingSkeleton } from '../components';

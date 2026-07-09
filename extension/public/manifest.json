@@ -1,27 +1,29 @@
 {
   "manifest_version": 3,
   "name": "Anthena Capture",
-  "version": "0.1.0",
+  "version": "2.0.0",
   "description": "Capture UI evidence from internal apps for Anthena design system inventory",
   "permissions": [
     "activeTab",
     "tabs",
     "storage",
     "scripting",
-    "downloads"
+    "downloads",
+    "sidePanel"
   ],
   "host_permissions": [
-    "https://*/*",
-    "http://*/*"
+    "<all_urls>"
   ],
   "action": {
-    "default_popup": "popup/index.html",
     "default_title": "Anthena Capture",
     "default_icon": {
       "16": "icons/icon16.png",
       "48": "icons/icon48.png",
       "128": "icons/icon128.png"
     }
+  },
+  "side_panel": {
+    "default_path": "popup/index.html"
   },
   "background": {
     "service_worker": "background/service-worker.js",
@@ -36,7 +38,11 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["injected/page-world-fiber-extractor.js", "injected/page-world-token-probe.js"],
+      "resources": [
+        "injected/fiber-extractor.js",
+        "injected/token-probe.js",
+        "injected/text-redactor.js"
+      ],
       "matches": ["<all_urls>"]
     }
   ],

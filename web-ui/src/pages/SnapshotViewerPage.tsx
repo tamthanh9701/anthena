@@ -6,7 +6,7 @@ import { useSnapshot } from '../hooks';
 import { PageHeader, ConfidenceBadge, LoadingSkeleton, EmptyState, ErrorState } from '../components';
 import type { NodeSummary } from '../types';
 
-const { Text, Title } = Typography;
+const { Text } = Typography;
 const { TextArea } = Input;
 
 const SnapshotViewerPage: React.FC = () => {
@@ -16,7 +16,7 @@ const SnapshotViewerPage: React.FC = () => {
   const [feedbackText, setFeedbackText] = useState('');
   const [thumbsValue, setThumbsValue] = useState<'up' | 'down' | null>(null);
 
-  const { data: snapshot, loading, error, refetch } = useSnapshot(snapshotId || null);
+  const { data: snapshot, isLoading: loading, isError: error, refetch } = useSnapshot(snapshotId || null);
 
   const selectedNode = snapshot?.nodes?.find((n: NodeSummary) => n.id === selectedNodeId) ?? null;
 

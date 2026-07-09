@@ -17,7 +17,8 @@ function createErrorResponse(error, code, requestId, details = null, gate = null
  */
 function paginate(page = 1, limit = 20) {
   const p = Math.max(1, parseInt(page, 10) || 1);
-  const l = Math.min(100, Math.max(1, parseInt(limit, 10) || 20));
+  const parsedLimit = parseInt(limit, 10);
+  const l = Number.isNaN(parsedLimit) ? 20 : Math.min(100, Math.max(1, parsedLimit));
   const offset = (p - 1) * l;
   return { page: p, limit: l, offset };
 }
@@ -74,6 +75,15 @@ function validatePilotContractForCosign(contract) {
   return errors.length > 0 ? errors.join('; ') : null;
 }
 
+/**
+ * Wraps async route handlers to forward rejected promises to Express error handler.
+ */
+function asyncHandler(fn) {
+  return (req, res, next) => {
+    Promise.resolve(fn(req, res, next)).catch(next);
+  };
+}
+
 module.exports = {
   createErrorResponse,
   paginate,
@@ -81,4 +91,5 @@ module.exports = {
   isValidUuid,
   validateRouteList,
   validatePilotContractForCosign,
+  asyncHandler,
 };

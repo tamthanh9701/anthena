@@ -1,0 +1,54 @@
+﻿# Reverse Design System Pipeline — Contract v2
+# Generated: 2026-07-05
+# Status: locked (supersedes contract v1 from ses_0dca50742ffey3VIZs0U2dy3dL)
+
+version: v2
+
+scope:
+  - "Capture website EvidencePackage (DOM, computed styles, rects, a11y, AntD markers)"
+  - "Analyze and map to Ant Design theme model (seed, map, alias, component tokens)"
+  - "Curated review gate with provenance"
+  - "Figma plugin: write to owned clone of AntD Figma kit"
+  - "Custom component detection: >=3 instance on >=2 scenario, confidence >=0.8"
+  - "Vertical slice: one real route end-to-end"
+
+out_of_scope:
+  - "Full AntD catalog unconditional generation"
+  - "Live AntD kit editing (read-only source)"
+  - "Runtime app changes"
+
+architecture:
+  storage:
+    metadata: "Postgres 16"
+    artifacts: "MinIO (immutable EvidencePackage)"
+  api: "/api/v2 (Express, separated from worker)"
+  auth: "OIDC/SSO with roles: Operator, Reviewer, Admin"
+  capture: "Hybrid — extension-first, Playwright as secondary adapter"
+  redaction:
+    policy: "default-redact: strip input values, filter sensitive text/attributes"
+    unredacted: "never leaves browser by default"
+
+pipeline_stages:
+  - scenario_manifest
+  - capture_evidence
+  - canonical_package
+  - analyze_and_map
+  - review_gate
+  - curated_release
+  - figma_sync
+
+acceptance_criteria:
+  - "CSS, a11y, rect, AntD evidence survives end-to-end without loss"
+  - "Signal status reflects real data, not hardcoded booleans"
+  - "Labelled dataset precision >=90% for AntD mapping"
+  - "Custom candidates do not bypass review gate"
+  - "Figma plugin: correct clone IDs, idempotent apply, conflict prevention"
+  - "Backend 235/235 pass, Web UI tsc -b && vite build pass, extension build pass"
+  - "Real-package E2E (not fake-upload) passes"
+
+release_lifecycle:
+  - draft
+  - reviewing
+  - approved
+  - published
+  - superseded

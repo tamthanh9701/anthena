@@ -5,6 +5,7 @@ export default function UploadStatus({ captureId, status, url }) {
 
   const statusColor = {
     uploaded: '#52c41a',
+    'captured-local': '#1677ff',
     pending: '#faad14',
     failed: '#ff4d4f',
     normalized: '#1677ff',
@@ -13,6 +14,7 @@ export default function UploadStatus({ captureId, status, url }) {
 
   const statusLabel = {
     uploaded: 'Uploaded',
+    'captured-local': 'Captured locally',
     pending: 'Pending',
     failed: 'Failed',
     normalized: 'Normalized',

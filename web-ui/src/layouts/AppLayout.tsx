@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Layout, Menu, Badge, Button, Dropdown, Space, Typography, theme } from 'antd';
+import { Layout, Menu, Badge, Button, Dropdown, Space, Typography, theme, message } from 'antd';
 import {
   FileTextOutlined,
   PlayCircleOutlined,
@@ -44,7 +44,7 @@ const AppLayout: React.FC = () => {
   const { isSigned } = useContract();
   const { createRun } = useRuns();
   const {
-    token: { colorBgContainer, borderRadiusLG },
+    token: { colorBgContainer },
   } = theme.useToken();
 
   const selectedKey = '/' + location.pathname.split('/').filter(Boolean)[0] || '/run-summary';
@@ -55,15 +55,21 @@ const AppLayout: React.FC = () => {
 
   const handleNewRun = async (mode: CreateRunRequest['mode']) => {
     try {
-      await createRun.mutateAsync({ mode });
-    } catch (err) {
-      console.error('Failed to create run:', err);
+      const result = await createRun.mutateAsync({ mode });
+      if (result.totalRoutes === 0) {
+        message.info(`Extension capture run created: ${result.runId}`);
+      } else {
+        message.success(`Run created: ${result.runId}`);
+      }
+      navigate('/runs');
+    } catch (err: any) {
+      message.error(err?.error || err?.message || 'Failed to create run');
     }
   };
 
   const newRunItems = [
-    { key: 'all', label: 'Re-crawl all routes', icon: <ReloadOutlined />, onClick: () => handleNewRun('all') },
-    { key: 'route', label: 'Re-crawl specific route', icon: <PlayCircleOutlined />, onClick: () => handleNewRun('route') },
+    { key: 'all', label: 'Create extension/crawler run', icon: <ReloadOutlined />, onClick: () => handleNewRun('all') },
+    { key: 'route', label: 'Specific route crawl (choose route in Config)', icon: <PlayCircleOutlined />, disabled: true },
   ];
 
   return (

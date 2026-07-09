@@ -40,7 +40,17 @@ export async function fetchWithTimeout(url, options, timeoutMs = 15000) {
   try {
     const response = await fetch(url, { ...options, signal: controller.signal });
     if (!response.ok) {
-      throw new NetworkError(`HTTP ${response.status}: ${response.statusText}`, response.status);
+      let detail = response.statusText;
+      try {
+        const text = await response.text();
+        if (text) {
+          const parsed = JSON.parse(text);
+          detail = parsed.error || parsed.message || text;
+        }
+      } catch {
+        // Keep statusText if body cannot be read or parsed.
+      }
+      throw new NetworkError(`HTTP ${response.status}: ${detail}`, response.status);
     }
     return response;
   } catch (err) {

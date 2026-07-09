@@ -2,9 +2,9 @@
 import { Tabs, Card, Row, Col, Image, Tag, Space, Typography, List, Alert, Empty } from 'antd';
 import { useParams } from 'react-router-dom';
 import { useDelta, useRuns } from '../hooks';
-import { PageHeader, RunSelector, StatusTag, LoadingSkeleton } from '../components';
+import { PageHeader, RunSelector, LoadingSkeleton } from '../components';
 
-const { Text, Title } = Typography;
+const { Text } = Typography;
 
 const DeltaChangelogPage: React.FC = () => {
   const { runId: paramId } = useParams<{ runId: string }>();
@@ -12,7 +12,7 @@ const DeltaChangelogPage: React.FC = () => {
   const { runs } = useRuns();
 
   const prevRunId = runs.length > 1 ? runs.find((r) => r.runId !== selectedRunId)?.runId ?? null : null;
-  const { data: delta, loading, error } = useDelta(selectedRunId, prevRunId);
+  const { data: delta, isLoading } = useDelta(selectedRunId, prevRunId);
 
   const categoryItems = [
 { key: 'newComponents', label: 'New Components (' + (delta?.categories.newComponents.length ?? 0) + ')' },
@@ -104,7 +104,7 @@ const DeltaChangelogPage: React.FC = () => {
         }
       />
 
-      <LoadingSkeleton loading={loading}>
+      <LoadingSkeleton loading={isLoading}>
         {!delta ? (
           <Empty description="No delta data available. At least 2 runs are required." />
         ) : (
@@ -121,7 +121,7 @@ const DeltaChangelogPage: React.FC = () => {
                 key: cat.key,
                 label: cat.label,
                 children: getCategoryData(cat.key).length === 0 ? (
-                  <Empty description={No } />
+                  <Empty description={"No items in this category"} />
                 ) : (
                   <div>
                     {getCategoryData(cat.key).map((item: any, i: number) => (

@@ -1,16 +1,22 @@
-// ─── DOM Extractor ──────────────────────────────────────────────────────
-// Extracts structural DOM evidence from the current page.
-// Runs in content script context (isolated world).
+/**
+ * DOM Extractor V2
+ * Extracts structural DOM evidence.
+ * When redacted=true, textContent is omitted (replaced with "[REDACTED]")
+ * and img src / bg-image URLs are stripped.
+ *
+ * @typedef {import('../shared/schema.js').DomNode} DomNode
+ */
 
 /**
- * Extract DOM nodes with bounding rects from the current page
- * @param {number} [maxNodes=200] - Limit number of nodes to avoid oversized payload
- * @returns {Array<{tagName: string, id?: string, className?: string, antdClass?: string, boundingRect: {top: number, left: number, width: number, height: number}, computedStyles: Record<string, string>, textContent?: string, childCount: number, selector: string}>}
+ * Collect DOM nodes with structural info.
+ * @param {number} [maxNodes=200]
+ * @param {boolean} [redact=true] - Strip text content and image URLs
+ * @returns {DomNode[]}
  */
-export function extractDomNodes(maxNodes = 200) {
-  const nodes = [];
+export function collectDomNodes(maxNodes = 200, redact = true) {
+  const nodes = /** @type {DomNode[]} */ ([]);
   const candidates = document.querySelectorAll(
-    'div, section, button, input, select, a, span, img, ul, li, table, tr, td, th, form, label, header, footer, nav, aside, main, article'
+    'div, section, button, input, select, a, span, img, ul, li, table, tr, td, th, form, label, header, footer, nav, aside, main, article, h1, h2, h3, h4, h5, h6, p, svg, canvas'
   );
 
   for (let i = 0; i < Math.min(candidates.length, maxNodes); i++) {
@@ -19,8 +25,9 @@ export function extractDomNodes(maxNodes = 200) {
 
     // Skip invisible/zero-size elements
     if (rect.width === 0 || rect.height === 0) continue;
-    if (rect.top > window.innerHeight || rect.bottom < 0) continue; // visible viewport only for P0-B
+    if (rect.top > window.innerHeight || rect.bottom < 0) continue;
 
+    /** @type {DomNode} */
     const node = {
       tagName: el.tagName.toLowerCase(),
       boundingRect: {
@@ -42,10 +49,27 @@ export function extractDomNodes(maxNodes = 200) {
     const antdClass = detectAntdClass(el);
     if (antdClass) node.antdClass = antdClass;
 
-    // Sample text content (truncated)
-    const text = el.textContent?.trim();
-    if (text && text.length > 0 && text.length < 100) {
-      node.textContent = text.substring(0, 80);
+    // Text content — redacted when redact=true
+    if (!redact) {
+      const text = el.textContent?.trim();
+      if (text && text.length > 0 && text.length < 100) {
+        node.textContent = text.substring(0, 80);
+      }
+    } else {
+      // Only preserve non-empty text for certain tags (small amounts)
+      const preserveTags = ['button', 'a', 'label', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'];
+      if (preserveTags.includes(el.tagName.toLowerCase())) {
+        const text = el.textContent?.trim();
+        if (text && text.length > 0 && text.length < 60) {
+          node.textContent = text.substring(0, 50);
+        }
+      } else {
+        // For all other elements, keep only if there's meaningful structure
+        const text = el.textContent?.trim();
+        if (text && text.length > 0 && text.length < 30) {
+          node.textContent = text.substring(0, 25);
+        }
+      }
     }
 
     nodes.push(node);
@@ -55,14 +79,14 @@ export function extractDomNodes(maxNodes = 200) {
 }
 
 /**
- * Get a minimal but unique CSS selector for an element
+ * Get a minimal but unique CSS selector.
  * @param {Element} el
  * @returns {string}
  */
 function getMinimalSelector(el) {
   if (el.id) return `#${CSS.escape(el.id)}`;
   let path = [];
-  let current = el;
+  let current = /** @type {Element|null} */ (el);
   while (current && current !== document.body && current !== document.documentElement) {
     let selector = current.tagName.toLowerCase();
     if (current.id) {
@@ -70,8 +94,8 @@ function getMinimalSelector(el) {
       break;
     }
     if (current.className && typeof current.className === 'string') {
-      const classes = current.className.trim().split(/\s+/).filter(c => !c.startsWith('ant-')).slice(0, 2);
-      if (classes.length) selector += '.' + classes.map(c => CSS.escape(c)).join('.');
+      const classes = current.className.trim().split(/\s+/).filter((c) => !c.startsWith('ant-')).slice(0, 2);
+      if (classes.length) selector += '.' + classes.map((c) => CSS.escape(c)).join('.');
     }
     path.unshift(selector);
     current = current.parentElement;
@@ -80,7 +104,7 @@ function getMinimalSelector(el) {
 }
 
 /**
- * Detect Ant Design class patterns on an element
+ * Detect Ant Design class patterns on an element.
  * @param {Element} el
  * @returns {string|null}
  */
@@ -88,11 +112,9 @@ function detectAntdClass(el) {
   const className = el.className;
   if (typeof className !== 'string') return null;
 
-  // Ant Design classes follow pattern: ant-{component}-{variant}
   const antdMatch = className.match(/\bant-([a-z]+(?:-[a-z]+)*)\b/);
   if (!antdMatch) return null;
 
-  // Map to standard Ant Design component names
   const antdMap = {
     'btn': 'Button',
     'input': 'Input',
@@ -152,6 +174,13 @@ function detectAntdClass(el) {
     'transfer': 'Transfer',
     'auto-complete': 'AutoComplete',
     'mentions': 'Mentions',
+    'segmented': 'Segmented',
+    'tour': 'Tour',
+    'watermark': 'Watermark',
+    'float-btn': 'FloatButton',
+    'app': 'App',
+    'qr-code': 'QRCode',
+    'color-picker': 'ColorPicker',
   };
 
   const antPrefix = antdMatch[1];

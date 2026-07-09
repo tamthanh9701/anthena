@@ -58,7 +58,7 @@ export interface SnapshotDetail {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { NodeSummary } from './nodes';
+import type { NodeSummary } from './nodes';
 
 export interface SignalReliabilityReport {
   runId: string;

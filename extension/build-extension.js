@@ -14,8 +14,9 @@ if (!existsSync(resolve(dist, "popup", "popup.js"))) {
 const entries = [
   { in: "src/background/service-worker.js", out: "background/service-worker" },
   { in: "src/content/content-script.js", out: "content/content-script" },
-  { in: "src/injected/page-world-fiber-extractor.js", out: "injected/page-world-fiber-extractor" },
-  { in: "src/injected/page-world-token-probe.js", out: "injected/page-world-token-probe" },
+  { in: "src/injected/fiber-extractor.js", out: "injected/fiber-extractor" },
+  { in: "src/injected/token-probe.js", out: "injected/token-probe" },
+  { in: "src/injected/text-redactor.js", out: "injected/text-redactor" },
 ];
 
 for (const entry of entries) {
@@ -72,4 +73,4 @@ if (existsSync(srcHtml)) {
   console.log("  popup HTML moved to popup/index.html");
 }
 
-console.log("Extension build complete.");
+console.log("Extension V2 build complete.");

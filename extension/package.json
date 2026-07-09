@@ -1,12 +1,19 @@
 {
   "name": "anthena-capture",
-  "version": "0.1.0",
-  "description": "Anthena Chrome Extension — Capture Plane for internal app UI inventory",
+  "version": "2.0.0",
+  "description": "Anthena Chrome Extension V2 — Scenario Manifest, Redact-by-Default, Evidence Package",
   "private": true,
   "scripts": {
     "build": "vite build && node build-extension.js",
     "dev": "vite build --watch",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "node test/verify-evidence-package.js",
+    "test:cross": "node test/cross-package-test.js",
+    "test:e2e": "node test/real-extension-e2e.js",
+    "test:quick": "node test/quick-capture-local-e2e.js",
+    "test:multi": "node test/multi-route-e2e.js",
+    "test:figma": "vitest run --config vitest.config.js",
+    "test:acceptance": "npm run build && npm test && npm run test:cross && npm run test:e2e && npm run test:multi && npm run test:figma"
   },
   "dependencies": {
     "pako": "^2.1.0",
@@ -21,6 +28,7 @@
     "@vitejs/plugin-react": "^6.0.3",
     "esbuild": "^0.28.1",
     "typescript": "~6.0.2",
-    "vite": "^8.1.1"
+    "vite": "^8.1.1",
+    "vitest": "^4.1.9"
   }
 }

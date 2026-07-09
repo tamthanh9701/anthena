@@ -3,7 +3,7 @@ import {
   Card, Form, Input, InputNumber, Select, Button, Checkbox,
   message, Descriptions, Tag, Space, Alert, Typography, Divider,
 } from 'antd';
-import { SaveOutlined, CheckCircleOutlined, LockOutlined } from '@ant-design/icons';
+import { SaveOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import { useContract } from '../hooks';
 import type { PilotContractInput } from '../types';
 
@@ -41,7 +41,7 @@ const isAbsoluteUrl = (url: string) => {
 };
 
 const PilotContractPage: React.FC = () => {
-  const { contract, isSigned, status, saveDraft, cosign } = useContract();
+  const { contract, isSigned, saveDraft, cosign } = useContract();
   const [form] = Form.useForm();
   const [cosigning, setCosigning] = useState(false);
 

@@ -102,7 +102,7 @@ message.success(clusterIds.length + ' clusters ' + action + 'd');
                       <CropThumbnail
                         cropUrl={cluster.representativeCrop ?? undefined}
                         alt={cluster.name}
-                        size="100%"
+                        size={100}
                         style={{ width: '100%', height: 100, objectFit: 'cover', borderRadius: 4 }}
                       />
                       {cluster.confidenceDistribution && (

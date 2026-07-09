@@ -12,6 +12,7 @@ const requestIdMiddleware = require('./middleware/requestId');
 const rateLimiter = require('./middleware/rateLimiter');
 const { errorHandler, notFoundHandler } = require('./middleware/errorHandler');
 const routes = require('./api/routes');
+const v2Routes = require('./v2/routes');
 const queue = require('./queue');
 const browser = require('./collector/browser');
 const { collectRoute } = require('./collector');
@@ -27,6 +28,7 @@ app.use(cors({
   origin: [
     'http://localhost:3000',
     'http://localhost:3001',
+    'https://anthena.jultee.io.vn',
     /^chrome-extension:\/\/[a-z]+$/,
     process.env.CORS_ORIGIN || undefined,
   ].filter(Boolean),
@@ -36,13 +38,9 @@ app.use(cors({
 app.use(express.json({ limit: '50mb' }));
 app.use(requestIdMiddleware);
 app.use(rateLimiter);
-app.use(authMiddleware);
-
-// ── Routes ────────────────────────────────────────────────────────────────
-
-app.use('/api', routes);
-
+// ── Static Web UI ─────────────────────────────────────────────────────────
 // Serve production Web UI static build (if exists)
+// Must be BEFORE auth middleware so SPA/static files load without auth
 const publicDir = path.join(__dirname, '..', 'public');
 if (fs.existsSync(publicDir)) {
   app.use(express.static(publicDir));
@@ -61,6 +59,14 @@ if (fs.existsSync(publicDir)) {
 } else {
   logger.info('No production Web UI build found — API-only mode. Run `cd web-ui && npx vite build --outDir ../backend/public`');
 }
+
+app.use(authMiddleware);
+
+// ── Routes ────────────────────────────────────────────────────────────────
+
+app.use('/api', routes);
+app.use('/api/v2', v2Routes);
+app.use('/api/v1', v2Routes.v1CompatRouter);
 
 // Also mount at root level for health/ready
 app.get('/health', (req, res) => {

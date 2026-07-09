@@ -1,20 +1,20 @@
-// ─── Capture Session Manager ────────────────────────────────────────────
-// Manages capture session state and coordinates the capture flow.
+/**
+ * Capture Session Manager V2
+ * Manages capture session state, coordinates capture flow.
+ *
+ * @typedef {import('../shared/schema.js').CaptureSessionResponse} CaptureSessionResponse
+ */
 
 import { uploadCapturePackage } from './upload-client.js';
 import { randomId } from '../shared/schema.js';
 
 /**
- * @typedef {import('../shared/schema.js').CaptureSessionResponse} CaptureSessionResponse
- */
-
-/**
- * Create a new capture session via the backend API
- * @param {string} apiBaseUrl - Base URL of the Anthena backend
+ * Create a new capture session via the backend API.
+ * @param {string} apiBaseUrl
  * @param {string} runId
  * @param {string} moduleName
  * @param {string} environment
- * @param {string} adminToken - Admin API token for creating sessions
+ * @param {string} adminToken
  * @returns {Promise<CaptureSessionResponse>}
  */
 export async function createCaptureSession(apiBaseUrl, runId, moduleName, environment, adminToken) {
@@ -36,7 +36,7 @@ export async function createCaptureSession(apiBaseUrl, runId, moduleName, enviro
 }
 
 /**
- * Capture current page and upload
+ * V1 legacy capture current page and upload.
  * @param {{
  *   uploadUrl: string,
  *   uploadToken: string,
@@ -50,7 +50,6 @@ export async function createCaptureSession(apiBaseUrl, runId, moduleName, enviro
 export async function captureCurrentPage(config) {
   const captureId = `cap_${randomId(8)}`;
 
-  // 1. Extract evidence from content script
   const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
   if (!tabs[0]?.id) throw new Error('No active tab found');
 
@@ -63,13 +62,9 @@ export async function captureCurrentPage(config) {
     throw new Error(`Extraction failed: ${extraction.error}`);
   }
 
-  // 2. Capture screenshot (viewport only for P0-B)
-  const screenshotDataUrl = await chrome.tabs.captureVisibleTab(null, { format: 'webp' });
-
-  // Convert data URL to Blob
+  const screenshotDataUrl = await chrome.tabs.captureVisibleTab(null, { format: 'png' });
   const screenshotBlob = await (await fetch(screenshotDataUrl)).blob();
 
-  // 3. Upload
   const result = await uploadCapturePackage({
     uploadUrl: config.uploadUrl,
     uploadToken: config.uploadToken,
@@ -88,7 +83,6 @@ export async function captureCurrentPage(config) {
     captureId,
   });
 
-  // 4. Notify popup
   chrome.runtime.sendMessage({
     type: 'CAPTURE_COMPLETE',
     captureId: result.captureId || captureId,

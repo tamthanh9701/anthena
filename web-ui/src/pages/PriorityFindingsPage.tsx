@@ -1,12 +1,11 @@
 ﻿import React, { useState } from 'react';
-import { Table, Tag, Select, Space, Button, Card, Modal, Input, message, Typography } from 'antd';
+import { Table, Tag, Select, Space, Button, Card, Modal, message, Typography } from 'antd';
 import { useParams } from 'react-router-dom';
 import { useFindings } from '../hooks';
 import { PageHeader, RunSelector, CropThumbnail, ConfidenceBadge, LoadingSkeleton, EmptyState } from '../components';
 import type { FindingSummary } from '../types';
 
 const { Text } = Typography;
-const { TextArea } = Input;
 
 const driftTypeColors: Record<string, string> = {
   'antd-aligned': 'green',
@@ -23,7 +22,7 @@ const PriorityFindingsPage: React.FC = () => {
   const [feedbackModal, setFeedbackModal] = useState<{ findingId: string; clusterName: string } | null>(null);
   const [feedbackValue, setFeedbackValue] = useState<string>('');
 
-  const { findings, total, loading, submitFeedback, refetch } = useFindings(selectedRunId, {
+  const { findings, total, loading, submitFeedback } = useFindings(selectedRunId, {
     page,
     limit: 20,
     driftType: driftFilter,
